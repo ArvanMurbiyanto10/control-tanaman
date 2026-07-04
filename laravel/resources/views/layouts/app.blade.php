@@ -20,25 +20,25 @@
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'] },
                     colors: {
                         nature: {
-                            50: '#f0fdf4', // Very light mint for backgrounds
-                            100: '#dcfce7', // Light mint accents
-                            500: '#22c55e', // Emerald primary
-                            600: '#16a34a', // Emerald dark
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
                         },
                         water: {
                             100: '#e0f2fe',
-                            500: '#0ea5e9', // Sky blue
+                            500: '#0ea5e9',
                         },
                         sun: {
                             100: '#fef3c7',
-                            500: '#f59e0b', // Amber
+                            500: '#f59e0b',
                         },
                         soil: {
                             100: '#fdf4ff',
-                            500: '#d946ef', // Fuchsia/Purple for pH
+                            500: '#d946ef',
                         },
-                        darktext: '#1e293b', // Slate 800
-                        softtext: '#64748b', // Slate 500
+                        darktext: '#1e293b',
+                        softtext: '#64748b',
                     },
                     boxShadow: {
                         'soft': '0 8px 30px rgba(0, 0, 0, 0.04)',
@@ -138,7 +138,7 @@
             background-clip: text;
         }
 
-        /* === SIDEBAR === */
+        /* === SIDEBAR BASE === */
         #sidebar {
             background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
             box-shadow: 10px 0 30px rgba(0,0,0,0.02);
@@ -181,6 +181,136 @@
         .toast-info { border-color: #3b82f6; color: #1d4ed8; }
         .animate-toast-in { animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-toast-out { animation: slideUp 0.3s ease-in forwards; }
+
+        /* ============================================
+           COTA HAMBURGER MENU - MOBILE & TABLET (1024px)
+           ============================================ */
+
+        /* Hamburger Button - Kanan Atas */
+        .cota-hamburger {
+            display: none; /* Hidden by default on desktop */
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .cota-hamburger:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+        }
+
+        .cota-hamburger span {
+            display: block;
+            width: 22px;
+            height: 2.5px;
+            background: white;
+            margin: 4px auto;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        /* Hamburger Animation - X */
+        .cota-hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .cota-hamburger.active span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .cota-hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        /* Overlay - TANPA BLUR */
+        .cota-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Dark overlay without blur */
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .cota-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Responsive Logic for Tablet & Mobile */
+        @media (max-width: 1024px) {
+            /* Show Hamburger */
+            .cota-hamburger {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* Sidebar Positioning - Hidden Right by default */
+            #sidebar {
+                position: fixed !important;
+                top: 0 !important;
+                right: 0 !important;
+                left: auto !important; /* Remove left alignment */
+                width: 280px !important;
+                max-width: 85vw !important;
+                height: 100vh !important;
+                
+                /* Initial State: Hidden to the Right */
+                transform: translateX(100%) !important; 
+                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                
+                z-index: 1000 !important;
+                border-radius: 0 !important; /* Remove rounded corners */
+                box-shadow: -10px 0 30px rgba(0,0,0,0.15) !important; /* Shadow on left side */
+            }
+            
+            /* Sidebar Active State: Slide In */
+            #sidebar.active {
+                transform: translateX(0) !important;
+            }
+            
+            /* Main Content Adjustment */
+            main {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            
+            header {
+                padding-left: 1rem !important;
+                padding-right: 5rem !important; /* Space for hamburger */
+            }
+        }
+
+        /* Scrollbar styling for sidebar */
+        #sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #22c55e;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
@@ -189,8 +319,18 @@
     <!-- Toast Container -->
     <div id="toast-container"></div>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="w-72 flex flex-col h-full rounded-r-[2.5rem] z-30 overflow-y-auto shrink-0">
+    <!-- COTA Hamburger Button - Kanan Atas -->
+    <button class="cota-hamburger" id="cotaHamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- COTA Overlay -->
+    <div class="cota-overlay" id="cotaOverlay"></div>
+
+    <!-- Sidebar (Hapus class rounded agar tidak bentrok) -->
+    <aside id="sidebar" class="w-72 flex flex-col h-full z-30 overflow-y-auto shrink-0">
         <!-- Logo -->
         <div class="px-7 pt-10 pb-6 flex items-center gap-4">
             <div class="w-12 h-12 bg-gradient-to-br from-nature-500 to-teal-500 rounded-2xl flex items-center justify-center shadow-glow-green anim-leaf">
@@ -315,6 +455,76 @@
                 'Accept': 'application/json',
             };
             return fetch(url, { ...options, headers: { ...defaultHeaders, ...options.headers } });
+        }
+
+        // === COTA HAMBURGER MENU TOGGLE ===
+        const cotaHamburger = document.getElementById('cotaHamburger');
+        const cotaSidebar = document.getElementById('sidebar');
+        const cotaOverlay = document.getElementById('cotaOverlay');
+
+        function openCotaSidebar() {
+            cotaHamburger.classList.add('active');
+            cotaSidebar.classList.add('active');
+            cotaOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCotaSidebar() {
+            cotaHamburger.classList.remove('active');
+            cotaSidebar.classList.remove('active');
+            cotaOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // FORCE HIDE sidebar on load if mobile/tablet to prevent "stuck open" bug
+        function checkSidebarState() {
+            if (window.innerWidth <= 1024 && cotaSidebar) {
+                cotaSidebar.classList.remove('active');
+                cotaHamburger.classList.remove('active');
+                cotaOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // Run check immediately
+        checkSidebarState();
+
+        if (cotaHamburger && cotaSidebar && cotaOverlay) {
+            // Toggle sidebar
+            cotaHamburger.addEventListener('click', function() {
+                if (cotaSidebar.classList.contains('active')) {
+                    closeCotaSidebar();
+                } else {
+                    openCotaSidebar();
+                }
+            });
+            
+            // Close with overlay click
+            cotaOverlay.addEventListener('click', closeCotaSidebar);
+            
+            // Close when clicking menu link
+            const menuItems = cotaSidebar.querySelectorAll('.sidebar-link');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth <= 1024) {
+                        setTimeout(closeCotaSidebar, 150);
+                    }
+                });
+            });
+            
+            // Close on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && cotaSidebar.classList.contains('active')) {
+                    closeCotaSidebar();
+                }
+            });
+            
+            // Auto-close if resized to desktop
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 1024) {
+                    closeCotaSidebar();
+                }
+            });
         }
     </script>
 
