@@ -1,155 +1,321 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
-    @keyframes pulse-soft {
-        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
-    @keyframes pulse-red {
-        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-</style>
 
-<div class="min-h-screen pb-12">
-    <!-- ========================================== -->
-    <!-- HEADER & STATUS UTAMA (DATA REALTIME ASLI) -->
-    <!-- ========================================== -->
-    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8 flex flex-col lg:flex-row items-center justify-between gap-6 relative overflow-hidden">
-        <!-- Dekorasi Background -->
-        <div class="absolute right-0 top-0 w-64 h-full bg-gradient-to-l from-emerald-50 to-transparent pointer-events-none"></div>
-        <div class="absolute -right-10 -bottom-10 opacity-5 text-emerald-600 pointer-events-none transform -rotate-12">
-            <i class="fa-solid fa-seedling text-9xl"></i>
-        </div>
+<!-- Hamburger Menu Button (Mobile) -->
+<button class="menu-toggle" id="mobile-menu-btn">
+    <i class="fa-solid fa-bars text-xl"></i>
+</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-        <!-- Teks Sapaan -->
-        <div class="relative z-10 w-full lg:w-2/3">
-            <div class="flex items-center gap-3 mb-3">
-                <span class="bg-emerald-100 text-emerald-700 text-xs font-extrabold px-3 py-1 rounded-full flex items-center gap-2">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    Sensor Online
-                </span>
-                <span class="text-xs font-bold text-gray-400"><i class="fa-regular fa-clock mr-1"></i> {{ date('H:i') }} WIB</span>
-            </div>
-            <h1 class="text-3xl font-black text-gray-900 tracking-tight mb-2">Pantauan Lahan COTA</h1>
-            <p class="text-gray-500 text-sm leading-relaxed max-w-xl">
-                Menampilkan data langsung dari NodeMCU ESP32. Seluruh indikator di bawah ini merupakan hasil pembacaan nyata dari lahan pertanian Anda.
-            </p>
-        </div>
-
-        <!-- STATUS POMPA AIR (INDIKATOR REALTIME DARI ESP32) -->
-        @php
-            // Membaca status pompa dari database (true = menyala, false = mati)
-            $pompaAktif = $latestData->status_pompa ?? false;
-        @endphp
-        <div class="relative z-10 w-full lg:w-auto bg-gray-50 border border-gray-200 rounded-2xl p-5 flex items-center gap-5 min-w-[280px]">
-            <div class="w-14 h-14 rounded-full flex items-center justify-center text-white {{ $pompaAktif ? 'bg-emerald-500' : 'bg-gray-300' }}" style="animation: {{ $pompaAktif ? 'pulse-soft 2s infinite' : 'none' }}">
-                <i class="fa-solid fa-power-off text-2xl"></i>
-            </div>
+<div class="space-y-8 animate-entrance">
+    <!-- Hero Section -->
+    <div class="glass-card relative overflow-hidden bg-gradient-to-r from-white to-nature-50 border-0 shadow-soft">
+        <div class="absolute -right-20 -top-20 w-64 h-64 bg-nature-100 rounded-full blur-3xl opacity-60 anim-float"></div>
+        <div class="absolute right-20 -bottom-20 w-64 h-64 bg-water-100 rounded-full blur-3xl opacity-60 anim-float" style="animation-delay: 1.5s;"></div>
+        
+        <div class="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
             <div>
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Status Mesin Pompa</p>
-                @if($pompaAktif)
-                    <h3 class="text-xl font-black text-emerald-600">MENYALA</h3>
-                    <p class="text-xs font-bold text-emerald-400 mt-0.5">Air sedang dialirkan...</p>
-                @else
-                    <h3 class="text-xl font-black text-gray-600">MATI (STANDBY)</h3>
-                    <p class="text-xs font-medium text-gray-400 mt-0.5">Kelembaban tercukupi</p>
-                @endif
+                <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-darktext mb-3">
+                    Selamat Pagi, <br/>
+                    <span class="gradient-text">Ladang Subur!</span> <span class="inline-block anim-sun text-yellow-400">☀️</span>
+                </h1>
+                <p class="text-softtext text-base md:text-lg font-medium max-w-xl">
+                    Sistem cerdas memantau tanaman Anda setiap detik. Cuaca hari ini cerah, kelembaban ideal untuk pertumbuhan.
+                </p>
+                <div class="mt-6 flex gap-4">
+                    <div class="bg-white/80 px-4 py-2 rounded-xl flex items-center gap-3 shadow-sm border border-gray-100">
+                        <i class="fa-solid fa-leaf text-nature-500 anim-leaf"></i>
+                        <span class="font-bold text-sm text-darktext">Fase Vegetatif</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pump Control Widget -->
+            <div class="bg-white p-6 rounded-2xl shadow-hover border border-gray-100 w-full md:w-80 flex flex-col items-center group relative overflow-hidden">
+                <!-- Decorative water drop -->
+                <i class="fa-solid fa-droplet absolute -right-4 -bottom-4 text-7xl text-water-100 opacity-50 transform rotate-12 group-hover:scale-110 transition-transform"></i>
+
+                <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-6">Status Pompa Air</h3>
+                
+                @php
+                    $isPumpOn = isset($latestData) && ($latestData->status_pompa == 1 || $latestData->status_pompa === true);
+                @endphp
+
+                <div id="pump-indicator-ring" class="w-28 h-28 rounded-[2rem] flex items-center justify-center mb-6 transition-all duration-500 {{ $isPumpOn ? 'bg-nature-50 anim-pump-active shadow-glow-green' : 'bg-slate-50' }}">
+                    <div id="pump-indicator-icon" class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-500 {{ $isPumpOn ? 'bg-nature-500 text-white' : 'bg-slate-200 text-slate-400' }}">
+                        <i class="fa-solid fa-faucet-drip {{ $isPumpOn ? 'anim-water' : '' }}"></i>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="font-bold text-darktext text-sm">Mati</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="pump-toggle" class="sr-only peer" {{ $isPumpOn ? 'checked' : '' }}>
+                        <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-nature-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-nature-500"></div>
+                    </label>
+                    <span class="font-bold text-nature-600 text-sm">Nyala</span>
+                </div>
+                
+                <div class="text-[10px] text-softtext font-semibold bg-slate-50 px-3 py-1 rounded-full">
+                    Terakhir update: <span id="pump-last-update">{{ isset($latestData) ? \Carbon\Carbon::parse($latestData->created_at)->diffForHumans() : 'Belum ada data' }}</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- GRID 3 KARTU SENSOR ASLI                   -->
-    <!-- ========================================== -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        @include('dashboard.partials.kelembaban')
-        @include('dashboard.partials.ph-tanah')
-        @include('dashboard.partials.suhu-tanah')
+    <!-- Sensor Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Kelembaban -->
+        <a href="/detail/kelembaban" class="glass-card p-6 block group stagger-1 relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-water-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="flex justify-between items-start mb-6 relative z-10">
+                <div>
+                    <h3 class="text-softtext text-xs font-extrabold uppercase tracking-widest mb-1">Kelembaban</h3>
+                    <div class="text-3xl font-black text-darktext flex items-baseline gap-1">
+                        <span id="val-kelembaban" class="anim-count">{{ $latestData->kelembaban ?? 0 }}</span><span class="text-lg text-slate-400">%</span>
+                    </div>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-water-50 text-water-500 flex items-center justify-center text-xl group-hover:bg-water-500 group-hover:text-white transition-colors duration-300">
+                    <i class="fa-solid fa-droplet group-hover:anim-water"></i>
+                </div>
+            </div>
+            <!-- Fluid Bar -->
+            <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden relative z-10">
+                <div id="bar-kelembaban" class="h-full bg-water-500 anim-fluid" style="width: {{ $latestData->kelembaban ?? 0 }}%"></div>
+            </div>
+            @php
+                $kelVal = $latestData->kelembaban ?? 0;
+                $kelStatus = 'Kering';
+                if($kelVal >= 60 && $kelVal <= 80) $kelStatus = 'Optimal';
+                elseif($kelVal > 80) $kelStatus = 'Basah';
+            @endphp
+            <p class="text-xs text-softtext font-semibold mt-3 relative z-10">Kondisi: <span id="status-kelembaban" class="text-water-600 font-bold">{{ $kelStatus }}</span></p>
+        </a>
+
+        <!-- pH -->
+        <a href="/detail/ph" class="glass-card p-6 block group stagger-2 relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-soil-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="flex justify-between items-start mb-6 relative z-10">
+                <div>
+                    <h3 class="text-softtext text-xs font-extrabold uppercase tracking-widest mb-1">pH Tanah</h3>
+                    <div class="text-3xl font-black text-darktext flex items-baseline gap-1">
+                        <span id="val-ph" class="anim-count">{{ $latestData->ph_tanah ?? 0 }}</span><span class="text-lg text-slate-400">pH</span>
+                    </div>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-soil-50 text-soil-500 flex items-center justify-center text-xl group-hover:bg-soil-500 group-hover:text-white transition-colors duration-300">
+                    <i class="fa-solid fa-flask"></i>
+                </div>
+            </div>
+            <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden relative z-10">
+                @php $phPercent = (($latestData->ph_tanah ?? 0) / 14) * 100; @endphp
+                <div id="bar-ph" class="h-full bg-soil-500 anim-fluid" style="width: {{ $phPercent }}%"></div>
+            </div>
+            @php
+                $phVal = $latestData->ph_tanah ?? 7;
+                $phStatus = 'Normal';
+                if($phVal < 6.0) $phStatus = 'Asam';
+                elseif($phVal > 7.5) $phStatus = 'Basa';
+            @endphp
+            <p class="text-xs text-softtext font-semibold mt-3 relative z-10">Kondisi: <span id="status-ph" class="text-soil-600 font-bold">{{ $phStatus }}</span></p>
+        </a>
+
+        <!-- Suhu -->
+        <a href="/detail/suhu" class="glass-card p-6 block group stagger-3 relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-sun-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="flex justify-between items-start mb-6 relative z-10">
+                <div>
+                    <h3 class="text-softtext text-xs font-extrabold uppercase tracking-widest mb-1">Suhu Udara</h3>
+                    <div class="text-3xl font-black text-darktext flex items-baseline gap-1">
+                        <span id="val-suhu" class="anim-count">{{ $latestData->suhu_tanah ?? 0 }}</span><span class="text-lg text-slate-400">°C</span>
+                    </div>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-sun-50 text-sun-500 flex items-center justify-center text-xl group-hover:bg-sun-500 group-hover:text-white transition-colors duration-300">
+                    <i class="fa-solid fa-temperature-half group-hover:anim-sun"></i>
+                </div>
+            </div>
+            <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden relative z-10">
+                @php $suhuPercent = (($latestData->suhu_tanah ?? 0) / 50) * 100; @endphp
+                <div id="bar-suhu" class="h-full bg-sun-500 anim-fluid" style="width: {{ $suhuPercent }}%"></div>
+            </div>
+            @php
+                $suhuVal = $latestData->suhu_tanah ?? 28;
+                $suhuStatus = 'Ideal';
+                if($suhuVal < 20) $suhuStatus = 'Dingin';
+                elseif($suhuVal > 35) $suhuStatus = 'Panas';
+            @endphp
+            <p class="text-xs text-softtext font-semibold mt-3 relative z-10">Kondisi: <span id="status-suhu" class="text-sun-600 font-bold">{{ $suhuStatus }}</span></p>
+        </a>
     </div>
 
-    <!-- ========================================== -->
-    <!-- LOG AKTIVITAS & KONEKSI (HANYA FAKTA)      -->
-    <!-- ========================================== -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <!-- LOG AKTIVITAS (Fokus pada pengiriman data dan status pompa) -->
-        <div class="lg:col-span-2 bg-white rounded-3xl p-7 shadow-sm border border-gray-100">
-            <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-                <h2 class="text-gray-900 font-extrabold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-list-ul text-emerald-500"></i> Riwayat Sistem
-                </h2>
-                <a href="/jadwal" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition-colors">Atur Jadwal Pompa &rarr;</a>
-            </div>
-
-            <div class="space-y-4">
-                <!-- Log 1: Penerimaan Data Terakhir -->
-                <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                    <div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0">
-                        <i class="fa-solid fa-cloud-arrow-down"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-bold text-gray-900">Data Sensor Diterima</h3>
-                        <p class="text-xs text-gray-500 mt-1">NodeMCU berhasil mem-publish paket data JSON (Suhu, pH, Kelembaban) ke MQTT Broker HiveMQ.</p>
-                        <p class="text-[10px] font-bold text-gray-400 mt-2">Baru saja - {{ date('H:i:s') }}</p>
-                    </div>
-                </div>
-
-                <!-- Log 2: Logika Siram Pompa -->
-                <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                    <div class="bg-amber-100 text-amber-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0">
-                        <i class="fa-solid fa-microchip"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-bold text-gray-900">Evaluasi Ambang Batas</h3>
-                        <p class="text-xs text-gray-500 mt-1">Sistem membaca tingkat kelembaban di angka {{ $latestData->kelembaban ?? 0 }}%. Algoritma memutuskan tidak perlu menyalakan relay pompa.</p>
-                        <p class="text-[10px] font-bold text-gray-400 mt-2">1 menit yang lalu</p>
-                    </div>
-                </div>
+    <!-- Log Riwayat -->
+    <div class="glass-card stagger-4">
+        <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white/50 rounded-t-[1.5rem]">
+            <h2 class="text-sm font-extrabold text-darktext uppercase tracking-widest">Aktivitas Terbaru</h2>
+            <div class="flex gap-2">
+                <span class="w-2 h-2 rounded-full bg-nature-500 animate-pulse"></span>
+                <span class="text-[10px] font-bold text-softtext uppercase">Live Update</span>
             </div>
         </div>
-
-        <!-- INFO PERANGKAT (Hanya Info Realistis yang Terpasang) -->
-        <div class="lg:col-span-1 bg-gray-900 rounded-3xl p-7 text-white shadow-sm flex flex-col justify-between relative overflow-hidden">
-            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-
-            <div class="relative z-10">
-                <h2 class="font-extrabold text-lg mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-server text-emerald-400"></i> Detail Integrasi
-                </h2>
-
-                <ul class="space-y-4">
-                    <li class="flex justify-between items-center border-b border-gray-700 pb-3">
-                        <span class="text-xs text-gray-400">Mikrokontroler</span>
-                        <span class="text-sm font-bold text-gray-100">NodeMCU ESP32</span>
-                    </li>
-                    <li class="flex justify-between items-center border-b border-gray-700 pb-3">
-                        <span class="text-xs text-gray-400">Protokol Jaringan</span>
-                        <span class="text-sm font-bold text-gray-100">MQTT (Port 1883)</span>
-                    </li>
-                    <li class="flex justify-between items-center border-b border-gray-700 pb-3">
-                        <span class="text-xs text-gray-400">Broker Server</span>
-                        <span class="text-sm font-bold text-gray-100">broker.hivemq.com</span>
-                    </li>
-                    <li class="flex justify-between items-center">
-                        <span class="text-xs text-gray-400">Topik Terima Data</span>
-                        <span class="text-xs font-mono bg-gray-800 px-2 py-1 rounded text-emerald-400">cota/sensor/data</span>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="relative z-10 mt-6 bg-gray-800 p-4 rounded-xl border border-gray-700 text-center">
-                <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Terakhir Diperbarui</p>
-                <p class="text-sm font-bold text-emerald-400">{{ date('d M Y - H:i:s') }}</p>
+        <div class="p-6">
+            <div class="relative overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+                <table class="w-full text-sm text-left text-softtext">
+                    <thead class="text-xs text-darktext uppercase bg-slate-50 border-b border-gray-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 font-extrabold tracking-wider">Waktu</th>
+                            <th scope="col" class="px-6 py-4 font-extrabold tracking-wider">Suhu</th>
+                            <th scope="col" class="px-6 py-4 font-extrabold tracking-wider">Kelembaban</th>
+                            <th scope="col" class="px-6 py-4 font-extrabold tracking-wider">pH</th>
+                            <th scope="col" class="px-6 py-4 font-extrabold tracking-wider">Pompa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table-body">
+                        @forelse($historyData as $item)
+                        <tr class="bg-white border-b border-gray-50 hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-darktext whitespace-nowrap">
+                                <i class="fa-regular fa-clock text-slate-400 mr-2"></i>
+                                {{ \Carbon\Carbon::parse($item->created_at)->format('H:i:s') }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-sun-50 text-sun-600 font-bold px-2.5 py-1 rounded-md">{{ $item->suhu_tanah }}°C</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-water-50 text-water-600 font-bold px-2.5 py-1 rounded-md">{{ $item->kelembaban }}%</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-soil-50 text-soil-600 font-bold px-2.5 py-1 rounded-md">{{ $item->ph_tanah }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                @if($item->status_pompa == 1 || $item->status_pompa === true)
+                                    <span class="flex items-center gap-1.5 text-nature-600 font-bold text-xs bg-nature-50 px-3 py-1.5 rounded-full inline-flex border border-nature-100">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-nature-500 anim-sun"></span> Menyala
+                                    </span>
+                                @else
+                                    <span class="flex items-center gap-1.5 text-slate-500 font-bold text-xs bg-slate-100 px-3 py-1.5 rounded-full inline-flex">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Mati
+                                    </span>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center font-semibold text-slate-400">
+                                Belum ada riwayat data aktivitas.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
-
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    // === PUMP CONTROL ===
+    const pumpToggle = document.getElementById('pump-toggle');
+    
+    pumpToggle.addEventListener('change', function() {
+        const action = this.checked ? 'on' : 'off';
+        pumpToggle.disabled = true;
+        
+        cotaFetch('/api/pompa/toggle', {
+            method: 'POST',
+            body: JSON.stringify({ action: action })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                showToast(`Pompa berhasil di${action === 'on' ? 'nyalakan' : 'matikan'}.`, 'success');
+                updatePumpUI(action === 'on');
+            } else {
+                showToast('Gagal mengubah status pompa: ' + (data.message || ''), 'error');
+                pumpToggle.checked = (action !== 'on');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Terjadi kesalahan jaringan.', 'error');
+            pumpToggle.checked = (action !== 'on');
+        })
+        .finally(() => {
+            pumpToggle.disabled = false;
+        });
+    });
+
+    function updatePumpUI(isOn) {
+        const ring = document.getElementById('pump-indicator-ring');
+        const icon = document.getElementById('pump-indicator-icon');
+        const iconI = icon.querySelector('i');
+        
+        if (isOn) {
+            ring.className = "w-28 h-28 rounded-[2rem] flex items-center justify-center mb-6 transition-all duration-500 bg-nature-50 anim-pump-active shadow-glow-green";
+            icon.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-500 bg-nature-500 text-white";
+            iconI.classList.add('anim-water');
+        } else {
+            ring.className = "w-28 h-28 rounded-[2rem] flex items-center justify-center mb-6 transition-all duration-500 bg-slate-50";
+            icon.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-500 bg-slate-200 text-slate-400";
+            iconI.classList.remove('anim-water');
+        }
+        document.getElementById('pump-last-update').textContent = 'Baru saja';
+    }
+
+    // === LIVE DATA POLLING (every 5 seconds) ===
+    function fetchLatestData() {
+        cotaFetch('/api/sensor/latest')
+        .then(res => res.json())
+        .then(data => {
+            if (data) {
+                // Update Cards (trigger animation by re-assigning value)
+                updateAnimatedValue('val-kelembaban', data.kelembaban);
+                document.getElementById('bar-kelembaban').style.width = data.kelembaban + '%';
+                
+                // Kelembaban status text
+                let kelStatus = 'Kering';
+                if(data.kelembaban >= 60 && data.kelembaban <= 80) kelStatus = 'Optimal';
+                else if(data.kelembaban > 80) kelStatus = 'Basah';
+                document.getElementById('status-kelembaban').textContent = kelStatus;
+
+                updateAnimatedValue('val-ph', data.ph_tanah);
+                document.getElementById('bar-ph').style.width = ((data.ph_tanah / 14) * 100) + '%';
+                
+                let phStatus = 'Normal';
+                if(data.ph_tanah < 6.0) phStatus = 'Asam';
+                else if(data.ph_tanah > 7.5) phStatus = 'Basa';
+                document.getElementById('status-ph').textContent = phStatus;
+
+                updateAnimatedValue('val-suhu', data.suhu_tanah);
+                document.getElementById('bar-suhu').style.width = ((data.suhu_tanah / 50) * 100) + '%';
+                
+                let suhuStatus = 'Ideal';
+                if(data.suhu_tanah < 20) suhuStatus = 'Dingin';
+                else if(data.suhu_tanah > 35) suhuStatus = 'Panas';
+                document.getElementById('status-suhu').textContent = suhuStatus;
+
+                // Update Pump Toggle silently if it changed externally
+                const isPumpOn = (data.status_pompa == 1 || data.status_pompa === true);
+                if (!pumpToggle.disabled && pumpToggle.checked !== isPumpOn) {
+                    pumpToggle.checked = isPumpOn;
+                    updatePumpUI(isPumpOn);
+                }
+            }
+        });
+    }
+
+    function updateAnimatedValue(id, newValue) {
+        const el = document.getElementById(id);
+        if (el && el.textContent != newValue) {
+            el.textContent = newValue;
+            // Retrigger animation
+            el.classList.remove('anim-count');
+            void el.offsetWidth; // trigger reflow
+            el.classList.add('anim-count');
+        }
+    }
+
+    setInterval(fetchLatestData, 5000);
+</script>
+@endpush

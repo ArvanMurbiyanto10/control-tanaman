@@ -1,143 +1,74 @@
 /**
- * RESPONSIVE JAVASCRIPT UNTUK MONITORING COTA
- * Fungsi: Toggle sidebar di mobile/tablet
+ * COTA — Responsive JavaScript
+ * Sidebar toggle, hamburger menu, mobile interactions
  */
-
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // Buat tombol hamburger
+document.addEventListener('DOMContentLoaded', function () {
     createMenuButton();
-    
-    // Buat overlay
     createOverlay();
-    
-    // Setup event listeners
     setupEventListeners();
 });
 
-/**
- * Fungsi untuk membuat tombol hamburger menu
- */
 function createMenuButton() {
-    // Cek apakah sudah ada
     if (document.querySelector('.menu-toggle')) return;
-    
-    const button = document.createElement('button');
-    button.className = 'menu-toggle';
-    button.setAttribute('aria-label', 'Toggle Menu');
-    button.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 24px; height: 24px;">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-    `;
-    
-    // Tempatkan di body
-    document.body.appendChild(button);
+    const btn = document.createElement('button');
+    btn.className = 'menu-toggle';
+    btn.setAttribute('aria-label', 'Toggle Menu');
+    btn.innerHTML = '<i class="fa-solid fa-bars text-lg"></i>';
+    document.body.appendChild(btn);
 }
 
-/**
- * Fungsi untuk membuat overlay background
- */
 function createOverlay() {
-    // Cek apakah sudah ada
     if (document.querySelector('.sidebar-overlay')) return;
-    
     const overlay = document.createElement('div');
     overlay.className = 'sidebar-overlay';
     document.body.appendChild(overlay);
 }
 
-/**
- * Setup semua event listeners
- */
 function setupEventListeners() {
-    const menuToggle = document.querySelector('.menu-toggle');
-    const sidebar = document.querySelector('aside.w-64');
+    const btn = document.querySelector('.menu-toggle');
+    const sidebar = document.getElementById('sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
-    const navLinks = document.querySelectorAll('aside.w-64 a');
-    
-    // Toggle sidebar saat klik hamburger
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggleSidebar();
-        });
-    }
-    
-    // Tutup sidebar saat klik overlay
-    if (overlay && sidebar) {
-        overlay.addEventListener('click', function() {
-            closeSidebar();
-        });
-    }
-    
-    // Tutup sidebar saat klik link navigasi (hanya di mobile/tablet)
-    navLinks.forEach(function(link) {
-        link.addEventListener('click', function() {
-            if (window.innerWidth <= 1024) {
-                closeSidebar();
-            }
-        });
+
+    if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); toggleSidebar(); });
+    if (overlay) overlay.addEventListener('click', closeSidebar);
+
+    document.querySelectorAll('#sidebar a').forEach(link => {
+        link.addEventListener('click', () => { if (window.innerWidth <= 1024) closeSidebar(); });
     });
-    
-    // Tutup sidebar saat resize ke desktop
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 1024) {
-            closeSidebar();
-        }
-    });
-    
-    // Tutup sidebar saat klik di luar sidebar (mobile/tablet)
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth <= 1024 && sidebar && !sidebar.contains(e.target) && menuToggle && !menuToggle.contains(e.target)) {
-            closeSidebar();
-        }
-    });
+
+    window.addEventListener('resize', () => { if (window.innerWidth > 1024) closeSidebar(); });
 }
 
-/**
- * Fungsi untuk toggle sidebar (buka/tutup)
- */
 function toggleSidebar() {
-    const sidebar = document.querySelector('aside.w-64');
+    const sidebar = document.getElementById('sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar && overlay) {
-        sidebar.classList.toggle('sidebar-active');
-        overlay.classList.toggle('active');
-        document.body.style.overflow = sidebar.classList.contains('sidebar-active') ? 'hidden' : '';
-    }
+    if (!sidebar || !overlay) return;
+    const isOpen = sidebar.classList.contains('sidebar-active');
+    if (isOpen) { closeSidebar(); } else { openSidebar(); }
 }
 
-/**
- * Fungsi untuk menutup sidebar
- */
-function closeSidebar() {
-    const sidebar = document.querySelector('aside.w-64');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar && overlay) {
-        sidebar.classList.remove('sidebar-active');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-}
-
-/**
- * Fungsi untuk membuka sidebar
- */
 function openSidebar() {
-    const sidebar = document.querySelector('aside.w-64');
+    const sidebar = document.getElementById('sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar && overlay) {
-        sidebar.classList.add('sidebar-active');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
+    const btn = document.querySelector('.menu-toggle');
+    if (!sidebar || !overlay) return;
+    sidebar.classList.add('sidebar-active');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-xmark text-lg"></i>';
 }
 
-// Export functions untuk akses global
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const btn = document.querySelector('.menu-toggle');
+    if (!sidebar || !overlay) return;
+    sidebar.classList.remove('sidebar-active');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-bars text-lg"></i>';
+}
+
 window.toggleSidebar = toggleSidebar;
 window.closeSidebar = closeSidebar;
 window.openSidebar = openSidebar;

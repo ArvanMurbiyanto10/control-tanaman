@@ -1,95 +1,219 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="mb-6 flex justify-between items-end">
-        <div>
-            <h1 class="text-2xl font-bold text-white uppercase">Detail {{ $jenis }} Tanah</h1>
-            <p class="text-gray-400 text-sm mt-1">Pemantauan kondisi dan grafik pergerakan sensor.</p>
-        </div>
+
+<!-- Hamburger Menu Button (Mobile) -->
+<button class="menu-toggle" id="mobile-menu-btn">
+    <i class="fa-solid fa-bars text-xl"></i>
+</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="space-y-8">
+    <!-- Top Navigation -->
+    <div class="flex items-center gap-4 mb-2 animate-entrance">
+        <a href="/" class="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-darktext transition-colors shadow-sm">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1 class="text-2xl font-extrabold text-darktext">Analisis Detail</h1>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-1 space-y-6">
-            <div class="bg-creamcard rounded-3xl p-6 shadow-lg">
-                <h2 class="text-gray-900 font-bold text-lg mb-4 border-b border-gray-300 pb-2">Status Saat Ini</h2>
+    <!-- Parameter Detail Card (Dynamic Partial) -->
+    <div id="parameter-detail-container">
+        @if($jenis == 'kelembaban')
+            @include('dashboard.partials.kelembaban')
+        @elseif($jenis == 'ph')
+            @include('dashboard.partials.ph-tanah')
+        @elseif($jenis == 'suhu')
+            @include('dashboard.partials.suhu-tanah')
+        @endif
+    </div>
 
-                <div class="text-5xl font-black text-gray-900 mb-4">
-                    @if($jenis == 'kelembaban') {{ $latestData->kelembaban ?? 0 }}%
-                    @elseif($jenis == 'ph') {{ $latestData->ph_tanah ?? 0 }}
-                    @elseif($jenis == 'suhu') {{ $latestData->suhu_tanah ?? 0 }}°C
-                    @endif
-                </div>
-
-                <div class="text-sm text-gray-700 space-y-3">
-                    @if($jenis == 'kelembaban')
-                        <p><strong>Alat Sensor:</strong> Capacitive Soil Moisture v1.2</p>
-                        <p><strong>Ambang Batas Ideal:</strong> 60% - 80%</p>
-                        <p class="bg-blue-100 p-3 rounded-xl border border-blue-200 mt-4 text-blue-800">
-                            <i class="fa-solid fa-circle-info"></i> Kelembaban tanah saat ini terpantau normal. Sistem otomatis
-                            akan menyiram jika persentase menyentuh angka 40%.
-                        </p>
-                    @elseif($jenis == 'ph')
-                        <p><strong>Alat Sensor:</strong> Analog pH Meter Probe</p>
-                        <p><strong>Ambang Batas Ideal:</strong> 5.5 - 6.5 (Netral)</p>
-                        <p class="bg-red-100 p-3 rounded-xl border border-red-200 mt-4 text-red-800">
-                            <i class="fa-solid fa-triangle-exclamation"></i> Keseimbangan pH sangat penting agar akar dapat
-                            menyerap unsur hara pupuk (NPK) dengan maksimal.
-                        </p>
-                    @elseif($jenis == 'suhu')
-                        <p><strong>Alat Sensor:</strong> DS18B20 Waterproof</p>
-                        <p><strong>Rentang Ideal:</strong> 20°C - 28°C</p>
-                        <p class="bg-green-100 p-3 rounded-xl border border-green-200 mt-4 text-green-800">
-                            <i class="fa-solid fa-leaf"></i> Fluktuasi panas tanah terjaga dengan baik. Tanaman terhindar dari
-                            potensi <i>heat stress</i>.
-                        </p>
-                    @endif
-                </div>
+    <!-- Chart Card -->
+    <div class="glass-card p-6 md:p-8 animate-entrance stagger-2">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h3 class="text-lg font-extrabold text-darktext flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-nature-500"></i> Grafik Tren Data
+                </h3>
+                <p class="text-xs font-semibold text-softtext">Pergerakan {{ ucfirst($jenis) }} dalam 24 Jam Terakhir</p>
+            </div>
+            
+            <div class="bg-slate-100 p-1 rounded-lg flex text-xs font-bold w-full md:w-auto">
+                <button class="flex-1 md:flex-none px-4 py-2 rounded-md bg-white text-darktext shadow-sm border border-gray-200">Hari Ini</button>
+                <button class="flex-1 md:flex-none px-4 py-2 rounded-md text-slate-500 hover:text-darktext transition-colors">7 Hari</button>
+                <button class="flex-1 md:flex-none px-4 py-2 rounded-md text-slate-500 hover:text-darktext transition-colors">Bulan</button>
             </div>
         </div>
 
-        <div class="lg:col-span-2 bg-creamcard rounded-3xl p-6 shadow-lg flex flex-col">
-            <h2 class="text-gray-900 font-bold text-lg mb-1">Grafik Pergerakan Waktu</h2>
-            <p class="text-gray-500 text-xs font-semibold mb-6">Data ditarik secara real-time dari NodeMCU</p>
-            <div class="relative flex-1 w-full" style="min-height: 300px;">
-                <canvas id="grafikDetail"></canvas>
-            </div>
+        <div class="relative h-[300px] md:h-[400px] w-full">
+            <canvas id="historyChart"></canvas>
         </div>
     </div>
+</div>
 @endsection
 
 @push('scripts')
-    <script>
-        const historyData = {!! json_encode(isset($historyData) ? $historyData->reverse()->values() : []) !!};
-        const labels = historyData.map(data => data.created_at.substring(11, 16));
-        const jenisGrafik = '{{ $jenis }}';
+<script>
+    // Data Preparation
+    const rawData = @json($historyData);
+    const chartType = '{{ $jenis }}';
+    
+    // Sort chronological for chart
+    rawData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    
+    const labels = rawData.map(item => {
+        const d = new Date(item.created_at);
+        return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    });
+    
+    // Map parameter to database column name
+    const dbField = chartType === 'ph' ? 'ph_tanah' : (chartType === 'suhu' ? 'suhu_tanah' : 'kelembaban');
+    const dataPoints = rawData.map(item => item[dbField]);
 
-        let chartData = [];
-        let chartLabel = '';
-        let chartColor = '';
-        let chartBg = '';
+    // Theme Colors configuration
+    let borderColor = '#22c55e'; // default nature green
+    let bgColor = 'rgba(34, 197, 94, 0.1)';
+    let gradientStart = 'rgba(34, 197, 94, 0.4)';
+    let gradientEnd = 'rgba(34, 197, 94, 0.0)';
 
-        // Menyesuaikan data grafik yang dimuat berdasarkan halaman yang dibuka
-        if (jenisGrafik === 'kelembaban') {
-            chartData = historyData.map(d => d.kelembaban);
-            chartLabel = 'Kelembaban (%)'; chartColor = '#3b4368'; chartBg = 'rgba(59, 67, 104, 0.15)';
-        } else if (jenisGrafik === 'ph') {
-            chartData = historyData.map(d => d.ph_tanah);
-            chartLabel = 'pH Tanah'; chartColor = '#c94f3a'; chartBg = 'rgba(201, 79, 58, 0.15)';
-        } else {
-            chartData = historyData.map(d => d.suhu_tanah);
-            chartLabel = 'Suhu (°C)'; chartColor = '#2d7a5b'; chartBg = 'rgba(45, 122, 91, 0.15)';
-        }
+    if(chartType === 'kelembaban') {
+        borderColor = '#0ea5e9'; // sky blue
+        gradientStart = 'rgba(14, 165, 233, 0.4)';
+        gradientEnd = 'rgba(14, 165, 233, 0.0)';
+    } else if (chartType === 'ph') {
+        borderColor = '#d946ef'; // fuchsia
+        gradientStart = 'rgba(217, 70, 239, 0.4)';
+        gradientEnd = 'rgba(217, 70, 239, 0.0)';
+    } else if (chartType === 'suhu') {
+        borderColor = '#f59e0b'; // amber
+        gradientStart = 'rgba(245, 158, 11, 0.4)';
+        gradientEnd = 'rgba(245, 158, 11, 0.0)';
+    }
 
-        Chart.defaults.font.family = 'sans-serif';
-        Chart.defaults.color = '#718096';
+    const ctx = document.getElementById('historyChart').getContext('2d');
+    
+    // Create gradient
+    let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, gradientStart);
+    gradient.addColorStop(1, gradientEnd);
 
-        new Chart(document.getElementById('grafikDetail').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: labels.length ? labels : ['00:00'],
-                datasets: [{ label: chartLabel, data: chartData, borderColor: chartColor, backgroundColor: chartBg, tension: 0.4, fill: true, borderWidth: 2 }]
+    Chart.defaults.color = '#94a3b8'; // Slate 400 for axis text
+    Chart.defaults.font.family = '"Plus Jakarta Sans", sans-serif';
+    Chart.defaults.font.weight = '600';
+
+    const historyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: chartType.toUpperCase(),
+                data: dataPoints,
+                borderColor: borderColor,
+                backgroundColor: gradient,
+                borderWidth: 3,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: borderColor,
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.4 // Smooth curves
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    titleColor: '#1e293b',
+                    bodyColor: '#1e293b',
+                    borderColor: '#e2e8f0',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            let unit = chartType === 'suhu' ? '°C' : (chartType === 'kelembaban' ? '%' : ' pH');
+                            return context.parsed.y + unit;
+                        }
+                    }
+                }
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            scales: {
+                y: {
+                    beginAtZero: chartType !== 'ph',
+                    grid: {
+                        color: 'rgba(226, 232, 240, 0.6)', // Light gray grid
+                        drawBorder: false,
+                    },
+                    border: { dash: [5, 5] }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false,
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+        }
+    });
+
+    // === LIVE DATA POLLING (every 5 seconds) ===
+    function fetchLatestData() {
+        cotaFetch('/api/sensor/latest')
+        .then(res => res.json())
+        .then(data => {
+            if (data) {
+                // Update Main Detail Value dynamically
+                const valEl = document.getElementById(`detail-val-${chartType}`);
+                const barEl = document.getElementById(`detail-bar-${chartType}`);
+                const pinEl = document.getElementById(`detail-pin-${chartType}`);
+                const statusEl = document.getElementById(`detail-status-${chartType}`);
+                
+                if (valEl) {
+                    let valInner = '';
+                    if(chartType === 'kelembaban') {
+                        valInner = `${data.kelembaban}<span class="text-3xl text-slate-400 ml-1">%</span>`;
+                        if(barEl) barEl.style.width = data.kelembaban + '%';
+                        
+                        let kelStatus = 'Kering';
+                        if(data.kelembaban >= 60 && data.kelembaban <= 80) kelStatus = 'Optimal';
+                        else if(data.kelembaban > 80) kelStatus = 'Basah';
+                        if(statusEl) statusEl.textContent = 'Kondisi: ' + kelStatus;
+                        
+                    } else if (chartType === 'ph') {
+                        valInner = `${data.ph_tanah}<span class="text-3xl text-slate-400 ml-2">pH</span>`;
+                        if(pinEl) pinEl.style.left = `calc(${((data.ph_tanah / 14) * 100)}% - 4px)`;
+                        
+                        let phStatus = 'Normal';
+                        if(data.ph_tanah < 6.0) phStatus = 'Terlalu Asam';
+                        else if(data.ph_tanah > 7.5) phStatus = 'Terlalu Basa';
+                        if(statusEl) statusEl.textContent = 'Kondisi: ' + phStatus;
+                        
+                    } else if (chartType === 'suhu') {
+                        valInner = `${data.suhu_tanah}<span class="text-3xl text-slate-400 ml-1">°C</span>`;
+                        if(barEl) barEl.style.width = ((data.suhu_tanah / 50) * 100) + '%';
+                        
+                        let suhuStatus = 'Hangat/Ideal';
+                        if(data.suhu_tanah < 20) suhuStatus = 'Dingin';
+                        else if(data.suhu_tanah > 35) suhuStatus = 'Panas';
+                        if(statusEl) statusEl.textContent = 'Kondisi: ' + suhuStatus;
+                    }
+                    
+                    if(valEl.innerHTML !== valInner) {
+                        valEl.innerHTML = valInner;
+                    }
+                }
+            }
         });
-    </script>
+    }
+
+    setInterval(fetchLatestData, 5000);
+</script>
 @endpush

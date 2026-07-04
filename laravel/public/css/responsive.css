@@ -1,306 +1,163 @@
 /* ============================================
-   RESPONSIVE CSS UNTUK MONITORING COTA
+   COTA — Responsive CSS (Light Theme)
+   Mobile-first responsive overhaul
    ============================================ */
 
-/* ========== MOBILE & TABLET (max-width: 1024px) ========== */
+/* ========== TABLET & BELOW (max-width: 1024px) ========== */
 @media screen and (max-width: 1024px) {
-    
-    /* Sidebar - ubah jadi fixed & hidden di mobile */
-    aside.w-64 {
+
+    /* Sidebar → fixed overlay */
+    #sidebar {
         position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
+        left: 0; top: 0;
         height: 100vh !important;
         z-index: 50 !important;
-        transform: translateX(-100%) !important;
-        transition: transform 0.3s ease-in-out !important;
-        border-radius: 0 !important;
+        transform: translateX(-100%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        border-radius: 0 2rem 2rem 0 !important;
+        width: 280px !important;
     }
-    
-    /* Class untuk menampilkan sidebar */
-    aside.w-64.sidebar-active {
+
+    #sidebar.sidebar-active {
         transform: translateX(0) !important;
     }
-    
-    /* Main content - full width di mobile */
-    main.flex-1 {
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-    }
-    
-    /* Overlay untuk mobile */
+
+    /* Overlay */
     .sidebar-overlay {
         display: none;
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        inset: 0;
+        background: rgba(248, 250, 252, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         z-index: 40;
-        backdrop-filter: blur(2px);
+        transition: opacity 0.3s ease;
     }
-    
     .sidebar-overlay.active {
         display: block;
     }
-    
-    /* Grid sensor - jadi 2 kolom di tablet */
-    .grid-cols-4 {
-        grid-template-columns: repeat(2, 1fr) !important;
+
+    /* Hamburger Button */
+    .menu-toggle {
+        display: flex !important;
     }
-    
-    /* Chart grid - jadi 1 kolom */
-    .lg\:col-span-7,
-    .lg\:col-span-5 {
-        grid-column: span 12 !important;
+
+    /* Main content full width */
+    main {
+        width: 100% !important;
     }
 }
 
 /* ========== MOBILE (max-width: 768px) ========== */
 @media screen and (max-width: 768px) {
-    
-    /* Grid sensor - jadi 1 kolom di mobile */
-    .grid-cols-4,
-    .grid-cols-3,
-    .md\:grid-cols-4 {
+
+    /* Stack grids to single column */
+    .grid.grid-cols-1.md\:grid-cols-3,
+    .grid.md\:grid-cols-3 {
         grid-template-columns: 1fr !important;
     }
-    
-    /* Perkecil padding main content */
-    main.flex-1 {
-        padding: 1rem !important;
+
+    .grid.grid-cols-1.lg\:grid-cols-2 {
+        grid-template-columns: 1fr !important;
     }
-    
-    /* Perkecil header */
+
+    .grid.grid-cols-1.lg\:grid-cols-3 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lg\:col-span-1, .lg\:col-span-2, .lg\:col-span-3 {
+        grid-column: span 1 !important;
+    }
+
+    /* Header stack */
     header {
-        margin-bottom: 1.5rem !important;
-    }
-    
-    /* Perkecil ukuran teks heading */
-    h1.text-3xl,
-    h2.text-2xl,
-    .text-2xl {
-        font-size: 1.25rem !important;
-    }
-    
-    .text-xl {
-        font-size: 1.125rem !important;
-    }
-    
-    /* Perkecil angka sensor cards */
-    .text-5xl {
-        font-size: 2.5rem !important;
-    }
-    
-    .text-4xl {
-        font-size: 2rem !important;
-    }
-    
-    .text-3xl {
-        font-size: 1.5rem !important;
-    }
-    
-    /* Perkecil card padding */
-    .rounded-3xl {
-        border-radius: 1rem !important;
-    }
-    
-    .p-8 {
-        padding: 1rem !important;
-    }
-    
-    .p-6 {
-        padding: 1rem !important;
-    }
-    
-    .p-5 {
-        padding: 0.875rem !important;
-    }
-    
-    /* Chart lebih kecil */
-    .relative.flex-1 {
-        min-height: 200px !important;
-    }
-    
-    /* Stack header elements */
-    header.flex {
         flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 1rem;
-    }
-    
-    header.flex > div:last-child {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    /* Perkecil gap */
-    .gap-8 {
         gap: 1rem !important;
+        padding: 1rem 1.25rem !important;
     }
-    
-    .gap-6 {
-        gap: 0.875rem !important;
+
+    /* Smaller paddings */
+    .px-6.md\:px-10 {
+        padding-left: 1.25rem !important;
+        padding-right: 1.25rem !important;
     }
-    
-    /* Tombol full width di mobile */
-    button,
-    .btn,
-    a[class*="px-5"] {
-        width: 100%;
-        margin-bottom: 0.5rem;
+
+    /* Responsive typography */
+    .text-3xl { font-size: 1.75rem !important; }
+    .text-4xl { font-size: 2.25rem !important; }
+    .text-5xl { font-size: 2.75rem !important; }
+
+    /* Card padding reduction */
+    .p-6, .p-8 { padding: 1.5rem !important; }
+    .p-10 { padding: 1.5rem !important; }
+
+    /* Gap reduction */
+    .gap-6, .gap-8 { gap: 1.25rem !important; }
+
+    /* Chart min height */
+    [style*="min-height: 300px"] {
+        min-height: 220px !important;
     }
-    
-    /* Perkecil icon */
-    .w-12.h-12 {
-        width: 2.5rem !important;
-        height: 2.5rem !important;
+
+    /* Touch friendly */
+    button, a, input, select {
+        min-height: 48px;
     }
-    
-    .text-2xl.fa-solid {
-        font-size: 1.25rem !important;
+    input, select, textarea {
+        font-size: 16px !important; /* Prevents iOS zoom */
     }
-    
-    /* Navigation items lebih kecil */
-    nav a {
-        padding: 0.75rem 1rem !important;
-        font-size: 0.875rem !important;
+
+    /* Toast full width */
+    .toast {
+        max-width: calc(100vw - 2.5rem) !important;
     }
-    
-    /* Hide breadcrumb di mobile */
-    header span:contains("...") {
-        display: none;
+    #toast-container {
+        left: 1.25rem;
+        right: 1.25rem;
     }
 }
 
 /* ========== SMALL MOBILE (max-width: 480px) ========== */
 @media screen and (max-width: 480px) {
-    
-    /* Perkecil lagi teks */
-    h1, h2, h3 {
-        font-size: 1.125rem !important;
-    }
-    
-    .text-4xl {
-        font-size: 1.75rem !important;
-    }
-    
-    .text-3xl {
-        font-size: 1.375rem !important;
-    }
-    
-    /* Chart lebih kecil lagi */
-    .relative.flex-1 {
-        min-height: 180px !important;
-    }
-    
-    /* Perkecil logo & branding */
-    aside .text-lg {
-        font-size: 1rem !important;
-    }
-    
-    aside .text-2xl.fa-solid {
-        font-size: 1.25rem !important;
-    }
-    
-    /* Sensor status - perkecil */
-    .text-xs {
-        font-size: 0.65rem !important;
-    }
-    
-    /* Button group - stack vertikal */
-    header.flex > div:last-child {
-        flex-wrap: wrap;
-    }
-    
-    header.flex > div:last-child > * {
-        width: calc(50% - 0.5rem);
-    }
+    .text-3xl { font-size: 1.5rem !important; }
+    .text-4xl { font-size: 2rem !important; }
+    .text-5xl { font-size: 2.25rem !important; }
+    .p-6, .p-8 { padding: 1.25rem !important; }
 }
 
-/* ========== LANDSCAPE MOBILE ========== */
-@media screen and (max-width: 768px) and (orientation: landscape) {
-    
-    .relative.flex-1 {
-        min-height: 160px !important;
-    }
-    
-    header {
-        padding: 0.5rem !important;
-    }
-    
-    .p-6 {
-        padding: 0.75rem !important;
-    }
-}
-
-/* ========== UTILITY CLASSES ========== */
-
-/* Hamburger menu button */
+/* ========== HAMBURGER BUTTON (Light Theme) ========== */
 .menu-toggle {
     display: none;
     position: fixed;
-    top: 1rem;
-    left: 1rem;
+    top: 1.25rem;
+    left: 1.25rem;
     z-index: 60;
-    background: #2d7a5b;
-    color: white;
-    border: none;
-    padding: 0.625rem 0.875rem;
-    border-radius: 0.5rem;
+    background: white;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    align-items: center;
+    justify-content: center;
 }
-
 .menu-toggle:hover {
-    background: #246348;
     transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-color: #22c55e;
+    color: #22c55e;
 }
-
 .menu-toggle:active {
     transform: scale(0.95);
 }
 
-@media screen and (max-width: 1024px) {
-    .menu-toggle {
-        display: block !important;
-    }
-}
-
-/* Touch-friendly elements */
-@media screen and (max-width: 768px) {
-    button, 
-    a,
-    input,
-    select {
-        min-height: 44px;
-        min-width: 44px;
-    }
-    
-    /* Prevent zoom on input focus di iOS */
-    input, select, textarea {
-        font-size: 16px !important;
-    }
-}
-
-/* Print styles */
+/* ========== PRINT ========== */
 @media print {
-    aside,
-    .menu-toggle,
-    header button,
-    nav {
-        display: none !important;
-    }
-    
-    main {
-        margin: 0 !important;
-        padding: 0 !important;
-        width: 100% !important;
-    }
-    
-    .bg-creamcard {
-        break-inside: avoid;
-    }
+    #sidebar, .menu-toggle, header, #toast-container { display: none !important; }
+    main { margin: 0 !important; padding: 0 !important; width: 100% !important; background: white !important; }
+    .glass-card { box-shadow: none !important; border: 1px solid #000 !important; }
 }
