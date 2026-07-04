@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
 
     <script>
         tailwind.config = {
@@ -22,6 +23,7 @@
                 }
             }
         }
+        
     </script>
 </head>
 
@@ -63,8 +65,8 @@
         </nav>
     </aside>
 
-    <main class="flex-1 flex flex-col p-8 overflow-y-auto">
-        <header class="flex justify-between items-center mb-8 text-sm text-gray-400">
+    <main class="flex-1 flex flex-col p-4 md:p-6 lg:p-8 overflow-y-auto">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 text-sm text-gray-400 gap-4">
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-location-dot"></i>
                 <span class="font-semibold text-gray-200">Purwokerto - Blok Lahan A</span>
@@ -83,7 +85,7 @@
 
         @yield('content')
     </main>
-
+<script src="{{ asset('js/responsive.js') }}"></script>
     @stack('scripts')
 </body>
 

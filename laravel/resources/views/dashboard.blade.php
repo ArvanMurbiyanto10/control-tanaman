@@ -72,7 +72,7 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"><div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto">
             <div class="bg-creamcard rounded-3xl p-5 flex justify-between items-center shadow-lg transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl cursor-pointer" onclick="alert('Lihat detail log Kelembaban Tanah')">
                 <div>
                     <p class="text-gray-600 text-xs font-bold uppercase tracking-wider mb-1">Kelembaban</p>
