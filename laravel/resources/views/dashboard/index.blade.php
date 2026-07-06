@@ -48,14 +48,21 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="font-bold text-darktext text-sm">Mati</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="pump-toggle" class="sr-only peer" {{ $isPumpOn ? 'checked' : '' }}>
-                        <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-nature-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-nature-500"></div>
-                    </label>
-                    <span class="font-bold text-nature-600 text-sm">Nyala</span>
-                </div>
+                <!-- Power Button Baru -->
+<div class="flex flex-col items-center gap-4 mb-6">
+    <button id="pump-toggle" class="power-button {{ $isPumpOn ? 'active' : '' }}" type="button">
+        <svg class="power-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+            <line x1="12" y1="2" x2="12" y2="12"></line>
+        </svg>
+    </button>
+    <div class="text-center">
+        <span id="pump-status-text" class="text-lg font-bold {{ $isPumpOn ? 'text-green-500' : 'text-red-500' }}">
+            {{ $isPumpOn ? 'NYALA' : 'MATI' }}
+        </span>
+        <p class="text-xs text-gray-500 mt-1">Klik untuk mengubah status</p>
+    </div>
+</div>
                 
                 <div class="text-[10px] text-softtext font-semibold bg-slate-50 px-3 py-1 rounded-full">
                     Terakhir update: <span id="pump-last-update">{{ isset($latestData) ? \Carbon\Carbon::parse($latestData->created_at)->diffForHumans() : 'Belum ada data' }}</span>
@@ -215,53 +222,92 @@
 
 @push('scripts')
 <script>
-    // === PUMP CONTROL ===
-    const pumpToggle = document.getElementById('pump-toggle');
+    // === POWER BUTTON POMPA CONTROL ===
+const pumpToggle = document.getElementById('pump-toggle');
+const pumpStatusText = document.getElementById('pump-status-text');
+
+pumpToggle.addEventListener('click', function() {
+    const btn = this;
+    const isCurrentlyOn = btn.classList.contains('active');
+    const action = isCurrentlyOn ? 'off' : 'on';
     
-    pumpToggle.addEventListener('change', function() {
-        const action = this.checked ? 'on' : 'off';
-        pumpToggle.disabled = true;
-        
-        cotaFetch('/api/pompa/toggle', {
-            method: 'POST',
-            body: JSON.stringify({ action: action })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                showToast(`Pompa berhasil di${action === 'on' ? 'nyalakan' : 'matikan'}.`, 'success');
-                updatePumpUI(action === 'on');
+    // Add click animation
+    btn.classList.add('clicked');
+    setTimeout(() => btn.classList.remove('clicked'), 300);
+    
+    // Disable button during request
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    
+    cotaFetch('/api/pompa/toggle', {
+        method: 'POST',
+        body: JSON.stringify({ action: action })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            // GANTI NOTIFIKASI
+            if (action === 'on') {
+                showToast('Menyiram telah dimulai.', 'success');
             } else {
-                showToast('Gagal mengubah status pompa: ' + (data.message || ''), 'error');
-                pumpToggle.checked = (action !== 'on');
+                showToast('Menyiram telah selesai.', 'success');
             }
-        })
-        .catch(err => {
-            console.error(err);
-            showToast('Terjadi kesalahan jaringan.', 'error');
-            pumpToggle.checked = (action !== 'on');
-        })
-        .finally(() => {
-            pumpToggle.disabled = false;
-        });
+            updatePumpUI(action === 'on');
+        } else {
+            showToast('Gagal mengubah status: ' + (data.message || ''), 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast('Terjadi kesalahan jaringan.', 'error');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
     });
+});
+
 
     function updatePumpUI(isOn) {
-        const ring = document.getElementById('pump-indicator-ring');
-        const icon = document.getElementById('pump-indicator-icon');
-        const iconI = icon.querySelector('i');
-        
-        if (isOn) {
-            ring.className = "w-28 h-28 rounded-[2rem] flex items-center justify-center mb-6 transition-all duration-500 bg-nature-50 anim-pump-active shadow-glow-green";
-            icon.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-500 bg-nature-500 text-white";
-            iconI.classList.add('anim-water');
-        } else {
-            ring.className = "w-28 h-28 rounded-[2rem] flex items-center justify-center mb-6 transition-all duration-500 bg-slate-50";
-            icon.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-500 bg-slate-200 text-slate-400";
-            iconI.classList.remove('anim-water');
-        }
-        document.getElementById('pump-last-update').textContent = 'Baru saja';
+    const ring = document.getElementById('pump-indicator-ring');
+    const icon = document.getElementById('pump-indicator-icon');
+    const iconI = icon.querySelector('i');
+    const btn = document.getElementById('pump-toggle');
+    const statusText = document.getElementById('pump-status-text');
+    
+    // Update indicator ring (icon di atas)
+    if (isOn) {
+        ring.className = "w-28 h-28 rounded-[2rem] flex items-center justify-center mb-6 transition-all duration-500 bg-nature-50 anim-pump-active shadow-glow-green";
+        icon.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-500 bg-nature-500 text-white";
+        iconI.classList.add('anim-water');
+    } else {
+        ring.className = "w-28 h-28 rounded-[2rem] flex items-center justify-center mb-6 transition-all duration-500 bg-slate-50";
+        icon.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-500 bg-slate-200 text-slate-400";
+        iconI.classList.remove('anim-water');
     }
+    
+    // Update power button (MERAH saat OFF, HIJAU saat ON)
+    if (btn) {
+        if (isOn) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    }
+    
+    // Update status text (MENYIRAM / MATI)
+    if (statusText) {
+        if (isOn) {
+            statusText.textContent = 'MENYIRAM';
+            statusText.className = 'text-lg font-bold text-green-500';
+        } else {
+            statusText.textContent = 'MATI';
+            statusText.className = 'text-lg font-bold text-red-500';
+        }
+    }
+    
+    document.getElementById('pump-last-update').textContent = 'Baru saja';
+}
 
     // === LIVE DATA POLLING (every 5 seconds) ===
     function fetchLatestData() {
@@ -295,12 +341,12 @@
                 else if(data.suhu_tanah > 35) suhuStatus = 'Panas';
                 document.getElementById('status-suhu').textContent = suhuStatus;
 
-                // Update Pump Toggle silently if it changed externally
-                const isPumpOn = (data.status_pompa == 1 || data.status_pompa === true);
-                if (!pumpToggle.disabled && pumpToggle.checked !== isPumpOn) {
-                    pumpToggle.checked = isPumpOn;
-                    updatePumpUI(isPumpOn);
-                }
+                // Update Power Button silently if it changed externally
+const isPumpOn = (data.status_pompa == 1 || data.status_pompa === true);
+const btnIsOn = pumpToggle.classList.contains('active');
+if (!pumpToggle.disabled && btnIsOn !== isPumpOn) {
+    updatePumpUI(isPumpOn);
+}
             }
         });
     }

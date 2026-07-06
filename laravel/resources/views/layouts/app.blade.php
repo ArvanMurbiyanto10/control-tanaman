@@ -311,6 +311,98 @@
             background: #22c55e;
             border-radius: 4px;
         }
+
+        /* ============================================
+   POWER BUTTON - POMPA CONTROL
+   ============================================ */
+
+/* ============================================
+   POWER BUTTON - POMPA CONTROL
+   ============================================ */
+
+.power-button {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    /* WARNA MERAH untuk OFF */
+    background: linear-gradient(145deg, #ef4444, #dc2626);
+    box-shadow: 
+        0 0 20px rgba(239, 68, 68, 0.4),
+        0 0 40px rgba(239, 68, 68, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+}
+
+.power-button:hover {
+    transform: scale(1.05);
+    box-shadow: 
+        0 0 30px rgba(239, 68, 68, 0.6),
+        0 0 60px rgba(239, 68, 68, 0.4);
+}
+
+.power-button:active {
+    transform: scale(0.95);
+    box-shadow: 
+        0 0 15px rgba(239, 68, 68, 0.5),
+        0 0 30px rgba(239, 68, 68, 0.3);
+}
+
+.power-button .power-icon {
+    width: 40px;
+    height: 40px;
+    color: white;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+}
+
+/* Active State - Pompa ON (HIJAU) */
+.power-button.active {
+    background: linear-gradient(145deg, #22c55e, #16a34a);
+    box-shadow: 
+        0 0 30px rgba(34, 197, 94, 0.5),
+        0 0 60px rgba(34, 197, 94, 0.3);
+    animation: pulse-glow-green 2s ease-in-out infinite;
+}
+
+.power-button.active:hover {
+    box-shadow: 
+        0 0 40px rgba(34, 197, 94, 0.7),
+        0 0 80px rgba(34, 197, 94, 0.5);
+}
+
+.power-button.active .power-icon {
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.9));
+}
+
+@keyframes pulse-glow-green {
+    0%, 100% {
+        box-shadow: 
+            0 0 30px rgba(34, 197, 94, 0.5),
+            0 0 60px rgba(34, 197, 94, 0.3);
+    }
+    50% {
+        box-shadow: 
+            0 0 45px rgba(34, 197, 94, 0.7),
+            0 0 90px rgba(34, 197, 94, 0.5);
+    }
+}
+
+/* Click Animation */
+.power-button.clicked {
+    animation: button-click 0.3s ease;
+}
+
+@keyframes button-click {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
     </style>
 </head>
 
