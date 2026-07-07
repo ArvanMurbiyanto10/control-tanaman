@@ -50,15 +50,16 @@
 
                 <!-- Power Button Baru -->
 <div class="flex flex-col items-center gap-4 mb-6">
-    <button id="pump-toggle" class="power-button {{ $isPumpOn ? 'active' : '' }}" type="button">
+    <button id="pump-toggle" class="power-button {{ $isPumpOn ? 'active' : '' }}" type="button" {{ $isPumpOn ? 'disabled' : '' }}>
         <svg class="power-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
             <line x1="12" y1="2" x2="12" y2="12"></line>
         </svg>
+        <span id="pump-countdown" class="absolute text-2xl font-black text-white"></span>
     </button>
     <div class="text-center">
         <span id="pump-status-text" class="text-lg font-bold {{ $isPumpOn ? 'text-green-500' : 'text-red-500' }}">
-            {{ $isPumpOn ? 'NYALA' : 'MATI' }}
+            {{ $isPumpOn ? 'MENYIRAM' : 'MATI' }}
         </span>
         <p class="text-xs text-gray-500 mt-1">Klik untuk mengubah status</p>
     </div>
@@ -225,50 +226,121 @@
     // === POWER BUTTON POMPA CONTROL ===
 const pumpToggle = document.getElementById('pump-toggle');
 const pumpStatusText = document.getElementById('pump-status-text');
+const pumpCountdown = document.getElementById('pump-countdown');
+let wateringInterval = null;
+const WATERING_DURATION = 10; // 10 seconds countdown
 
 pumpToggle.addEventListener('click', function() {
     const btn = this;
-    const isCurrentlyOn = btn.classList.contains('active');
-    const action = isCurrentlyOn ? 'off' : 'on';
     
     // Add click animation
     btn.classList.add('clicked');
     setTimeout(() => btn.classList.remove('clicked'), 300);
     
-    // Disable button during request
-    btn.disabled = true;
-    btn.style.opacity = '0.7';
+    // Start watering sequence
+    startWateringSequence();
+});
+
+function startWateringSequence() {
+    // 1. Immediately update UI to watering state (instant response)
+    showToast('Menyiram telah dimulai.', 'success');
     
+    pumpToggle.classList.add('watering');
+    pumpToggle.disabled = true;
+    
+    // Update indicator ring and icon above
+    const ring = document.getElementById('pump-indicator-ring');
+    const icon = document.getElementById('pump-indicator-icon');
+    const iconI = icon.querySelector('i');
+    ring.className = "w-28 h-28 rounded-[2rem] flex items-center justify-center mb-6 transition-all duration-500 bg-nature-50 anim-pump-active shadow-glow-green";
+    icon.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-500 bg-nature-500 text-white";
+    iconI.classList.add('anim-water');
+
+    let timeLeft = WATERING_DURATION;
+    pumpCountdown.textContent = timeLeft;
+    
+    pumpStatusText.textContent = `MENYIRAM (${timeLeft}s)`;
+    pumpStatusText.className = 'text-lg font-bold text-green-500';
+    
+    // 2. Trigger API call to start pump
     cotaFetch('/api/pompa/toggle', {
         method: 'POST',
-        body: JSON.stringify({ action: action })
+        body: JSON.stringify({ action: 'on' })
     })
     .then(res => res.json())
     .then(data => {
-        if(data.success) {
-            // GANTI NOTIFIKASI
-            if (action === 'on') {
-                showToast('Menyiram telah dimulai.', 'success');
-            } else {
-                showToast('Menyiram telah selesai.', 'success');
-            }
-            updatePumpUI(action === 'on');
-        } else {
-            showToast('Gagal mengubah status: ' + (data.message || ''), 'error');
+        if (!data.success) {
+            showToast('Gagal menyalakan pompa: ' + (data.message || ''), 'error');
+            resetPumpUI();
         }
     })
     .catch(err => {
         console.error(err);
-        showToast('Terjadi kesalahan jaringan.', 'error');
-    })
-    .finally(() => {
-        btn.disabled = false;
-        btn.style.opacity = '1';
+        showToast('Terjadi kesalahan jaringan saat menyalakan pompa.', 'error');
+        resetPumpUI();
     });
-});
 
+    // 3. Start countdown timer
+    if (wateringInterval) clearInterval(wateringInterval);
+    wateringInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+            pumpCountdown.textContent = timeLeft;
+            pumpStatusText.textContent = `MENYIRAM (${timeLeft}s)`;
+        } else {
+            clearInterval(wateringInterval);
+            wateringInterval = null;
+            
+            // Countdown finished: turn off pump
+            showToast('Menyiram telah selesai.', 'success');
+            
+            cotaFetch('/api/pompa/toggle', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'off' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    showToast('Gagal mematikan pompa: ' + (data.message || ''), 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Terjadi kesalahan jaringan saat mematikan pompa.', 'error');
+            });
+            
+            resetPumpUI();
+        }
+    }, 1000);
+}
 
-    function updatePumpUI(isOn) {
+function resetPumpUI() {
+    if (wateringInterval) {
+        clearInterval(wateringInterval);
+        wateringInterval = null;
+    }
+    
+    pumpToggle.classList.remove('watering', 'active');
+    pumpToggle.disabled = false;
+    pumpCountdown.textContent = '';
+    
+    // Update indicator ring and icon above
+    const ring = document.getElementById('pump-indicator-ring');
+    const icon = document.getElementById('pump-indicator-icon');
+    const iconI = icon.querySelector('i');
+    ring.className = "w-28 h-28 rounded-[2rem] flex items-center justify-center mb-6 transition-all duration-500 bg-slate-50";
+    icon.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-500 bg-slate-200 text-slate-400";
+    iconI.classList.remove('anim-water');
+    
+    // Status text back to MATI
+    pumpStatusText.textContent = 'MATI';
+    pumpStatusText.className = 'text-lg font-bold text-red-500';
+    
+    // Reset last update text
+    document.getElementById('pump-last-update').textContent = 'Baru saja';
+}
+
+function updatePumpUI(isOn) {
     const ring = document.getElementById('pump-indicator-ring');
     const icon = document.getElementById('pump-indicator-icon');
     const iconI = icon.querySelector('i');
@@ -286,12 +358,15 @@ pumpToggle.addEventListener('click', function() {
         iconI.classList.remove('anim-water');
     }
     
-    // Update power button (MERAH saat OFF, HIJAU saat ON)
+    // Update power button
     if (btn) {
         if (isOn) {
             btn.classList.add('active');
+            btn.disabled = true;
         } else {
-            btn.classList.remove('active');
+            btn.classList.remove('active', 'watering');
+            btn.disabled = false;
+            if (pumpCountdown) pumpCountdown.textContent = '';
         }
     }
     
@@ -343,7 +418,7 @@ pumpToggle.addEventListener('click', function() {
 
                 // Update Power Button silently if it changed externally
 const isPumpOn = (data.status_pompa == 1 || data.status_pompa === true);
-const btnIsOn = pumpToggle.classList.contains('active');
+const btnIsOn = pumpToggle.classList.contains('active') || pumpToggle.classList.contains('watering');
 if (!pumpToggle.disabled && btnIsOn !== isPumpOn) {
     updatePumpUI(isPumpOn);
 }

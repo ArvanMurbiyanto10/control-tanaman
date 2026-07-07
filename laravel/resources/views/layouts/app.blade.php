@@ -531,11 +531,11 @@
             border: none;
             cursor: pointer;
             position: relative;
-            /* WARNA MERAH untuk OFF */
-            background: linear-gradient(145deg, #ef4444, #dc2626);
+            /* WARNA HIJAU untuk OFF/READY */
+            background: linear-gradient(145deg, #22c55e, #16a34a);
             box-shadow:
-                0 0 20px rgba(239, 68, 68, 0.4),
-                0 0 40px rgba(239, 68, 68, 0.2);
+                0 0 20px rgba(34, 197, 94, 0.4),
+                0 0 40px rgba(34, 197, 94, 0.2);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
@@ -546,15 +546,15 @@
         .power-button:hover {
             transform: scale(1.05);
             box-shadow:
-                0 0 30px rgba(239, 68, 68, 0.6),
-                0 0 60px rgba(239, 68, 68, 0.4);
+                0 0 30px rgba(34, 197, 94, 0.6),
+                0 0 60px rgba(34, 197, 94, 0.4);
         }
 
         .power-button:active {
             transform: scale(0.95);
             box-shadow:
-                0 0 15px rgba(239, 68, 68, 0.5),
-                0 0 30px rgba(239, 68, 68, 0.3);
+                0 0 15px rgba(34, 197, 94, 0.5),
+                0 0 30px rgba(34, 197, 94, 0.3);
         }
 
         .power-button .power-icon {
@@ -565,39 +565,35 @@
             filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
         }
 
-        /* Active State - Pompa ON (HIJAU) */
-        .power-button.active {
-            background: linear-gradient(145deg, #22c55e, #16a34a);
+        /* Active/Watering State - Pompa ON (ABU-ABU) */
+        .power-button.active, .power-button.watering, .power-button:disabled {
+            background: linear-gradient(145deg, #94a3b8, #64748b) !important;
             box-shadow:
-                0 0 30px rgba(34, 197, 94, 0.5),
-                0 0 60px rgba(34, 197, 94, 0.3);
-            animation: pulse-glow-green 2s ease-in-out infinite;
+                0 0 20px rgba(148, 163, 184, 0.3),
+                0 0 40px rgba(148, 163, 184, 0.15) !important;
+            cursor: not-allowed;
+            pointer-events: none;
+            transform: none !important;
+            animation: none !important;
         }
 
-        .power-button.active:hover {
-            box-shadow:
-                0 0 40px rgba(34, 197, 94, 0.7),
-                0 0 80px rgba(34, 197, 94, 0.5);
+        .power-button.active .power-icon, .power-button.watering .power-icon, .power-button:disabled .power-icon {
+            display: none !important;
         }
 
-        .power-button.active .power-icon {
-            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.9));
+        /* Countdown Number style inside button */
+        .power-button #pump-countdown {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: white;
+            display: none;
+            position: absolute;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            letter-spacing: -0.05em;
         }
 
-        @keyframes pulse-glow-green {
-
-            0%,
-            100% {
-                box-shadow:
-                    0 0 30px rgba(34, 197, 94, 0.5),
-                    0 0 60px rgba(34, 197, 94, 0.3);
-            }
-
-            50% {
-                box-shadow:
-                    0 0 45px rgba(34, 197, 94, 0.7),
-                    0 0 90px rgba(34, 197, 94, 0.5);
-            }
+        .power-button.active #pump-countdown, .power-button.watering #pump-countdown, .power-button:disabled #pump-countdown {
+            display: block !important;
         }
 
         /* Click Animation */

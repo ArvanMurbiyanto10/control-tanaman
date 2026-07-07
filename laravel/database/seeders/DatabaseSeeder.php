@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\SensorData;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash; // WAJIB DITAMBAHKAN AGAR HASH BISA DIGUNAKAN
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,10 +18,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Pastikan tidak menduplikasi jika seeder dijalankan ulang
-        if (User::where('email', 'arvan@example.com')->count() === 0) {
-            User::factory()->create([
-                'name' => 'Arvan Murbiyanto',
-                'email' => 'arvan@example.com',
+        if (User::where('username', 'doktortj')->count() === 0) {
+            User::create([ // <-- Gunakan create langsung, tanpa factory()
+                'name' => 'DoktorTj Tegal',
+                'username' => 'doktortj',
+                'password' => Hash::make('987654321'),
             ]);
         }
 
