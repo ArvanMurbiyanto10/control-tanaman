@@ -681,6 +681,15 @@
                 <i class="fa-solid fa-faucet-drip w-6 text-center text-lg text-amber-500"></i>
                 <span>Kontrol & Jadwal</span>
             </a>
+
+            <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em] mt-8 mb-3 px-4">Sesi Akun</div>
+            <form action="{{ route('logout') }}" method="POST" class="px-1">
+                @csrf
+                <button type="submit" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all border border-transparent hover:border-red-100 cursor-pointer text-left">
+                    <i class="fa-solid fa-right-from-bracket w-6 text-center text-lg"></i>
+                    <span>Keluar Aplikasi</span>
+                </button>
+            </form>
         </nav>
 
         <!-- Sidebar Footer -->

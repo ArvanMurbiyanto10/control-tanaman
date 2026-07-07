@@ -28,7 +28,7 @@
             <p class="text-sm text-gray-500 mt-1 font-medium">Sistem Monitoring Lahan Cerdas</p>
         </div>
 
-        <form action="/login" method="POST" class="space-y-5">
+        <form action="/" method="POST" class="space-y-5">
             @csrf
 
             <div>
