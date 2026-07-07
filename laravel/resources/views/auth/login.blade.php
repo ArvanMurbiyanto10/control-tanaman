@@ -9,15 +9,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body class="bg-emerald-50 h-screen flex items-center justify-center p-4 relative overflow-hidden">
+<!-- Tambahkan background-image dan atur properti cover/center -->
+
+<body class="h-screen flex items-center justify-center p-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+    style="background-image: url('{{ asset('images/gambar.jpg') }}');">
+
+    <!-- Lapisan Gelap Transparan (Overlay) agar background tidak menutupi kotak form -->
+    <div class="absolute inset-0 bg-emerald-950/60 z-0"></div>
 
     <!-- Dekorasi Background -->
-    <div class="absolute -left-20 -top-20 text-emerald-100 opacity-60 transform -rotate-12 pointer-events-none">
+    <div class="absolute -left-20 -top-20 text-emerald-100/20 transform -rotate-12 pointer-events-none z-0">
         <i class="fa-solid fa-leaf text-[15rem]"></i>
     </div>
 
+    <!-- Kotak Form Login -->
     <div
-        class="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-xl w-full max-w-md border border-white relative z-10">
+        class="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl w-full max-w-md border border-white/50 relative z-10">
 
         <div class="text-center mb-8">
             <div
