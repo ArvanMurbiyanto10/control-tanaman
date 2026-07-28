@@ -15,10 +15,12 @@ class SensorData extends Model
         'suhu_tanah',
         'ph_tanah',
         'kelembaban',
+        'status_hujan',
         'status_pompa',
     ];
 
     protected $casts = [
         'status_pompa' => 'boolean',
+        'status_hujan' => 'boolean',
     ];
 }

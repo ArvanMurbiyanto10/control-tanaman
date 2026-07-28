@@ -3,8 +3,8 @@
     
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 relative z-10">
         <div>
-            <h2 class="text-3xl font-extrabold text-darktext mb-2">Suhu Lingkungan</h2>
-            <p class="text-sm font-semibold text-softtext">Temperatur udara di sekitar area budidaya.</p>
+            <h2 class="text-3xl font-extrabold text-darktext mb-2">Suhu Tanah</h2>
+            <p class="text-sm font-semibold text-softtext">Suhu tanah di area budidaya tanaman.</p>
         </div>
         <div class="w-16 h-16 rounded-2xl bg-sun-50 text-sun-500 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(245,158,11,0.3)] mt-4 md:mt-0 anim-sun">
             <i class="fa-solid fa-temperature-half"></i>
@@ -45,7 +45,7 @@
             <div class="mt-8 p-4 bg-orange-50/50 rounded-xl border border-orange-100 flex gap-4">
                 <i class="fa-solid fa-sun text-orange-500 mt-0.5 anim-sun"></i>
                 <p class="text-xs font-semibold text-slate-600 leading-relaxed">
-                    Suhu hangat memicu proses transpirasi dan fotosintesis. Rentang <strong class="text-darktext">25°C - 32°C</strong> adalah kondisi paling optimal siang ini.
+                    Suhu hangat memicu proses transpirasi dan fotosintesis. Rentang <strong class="text-darktext">25°C - 32°C</strong> adalah kondisi paling optimal untuk pertumbuhan tanaman.
                 </p>
             </div>
         </div>

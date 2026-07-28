@@ -371,6 +371,11 @@
             color: #1d4ed8;
         }
 
+        .toast-warning {
+            border-color: #f59e0b;
+            color: #b45309;
+        }
+
         .animate-toast-in {
             animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -566,18 +571,30 @@
         }
 
         /* Active/Watering State - Pompa ON (ABU-ABU) */
-        .power-button.active, .power-button.watering, .power-button:disabled {
+        .power-button.active, .power-button.watering {
             background: linear-gradient(145deg, #94a3b8, #64748b) !important;
             box-shadow:
                 0 0 20px rgba(148, 163, 184, 0.3),
                 0 0 40px rgba(148, 163, 184, 0.15) !important;
-            cursor: not-allowed;
-            pointer-events: none;
-            transform: none !important;
-            animation: none !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .power-button.active .power-icon, .power-button.watering .power-icon, .power-button:disabled .power-icon {
+        /* Saat tombol dikunci fisik (misal: Rain Lock) */
+        .power-button:disabled {
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        /* Loading state saat request fetch sedang berjalan */
+        .power-button.loading {
+            cursor: wait;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* Hanya sembunyikan icon power ketika sedang ada hitung mundur aktif */
+        .power-button.counting .power-icon {
             display: none !important;
         }
 
@@ -592,7 +609,8 @@
             letter-spacing: -0.05em;
         }
 
-        .power-button.active #pump-countdown, .power-button.watering #pump-countdown, .power-button:disabled #pump-countdown {
+        /* Hanya tampilkan angka countdown ketika kelas counting aktif */
+        .power-button.counting #pump-countdown {
             display: block !important;
         }
 
@@ -670,8 +688,9 @@
             <a href="/detail/suhu"
                 class="sidebar-link {{ request()->is('detail/suhu') ? 'active' : '' }} flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold">
                 <i class="fa-solid fa-sun w-6 text-center text-lg text-sun-500 group-hover:anim-sun"></i>
-                <span>Suhu Lingkungan</span>
+                <span>Suhu Tanah</span>
             </a>
+
 
             <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em] mt-8 mb-3 px-4">Sistem
                 Pompa</div>
@@ -763,7 +782,7 @@
         function showToast(message, type = 'success', duration = 3500) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            const icons = { success: 'fa-circle-check text-nature-500', error: 'fa-circle-xmark text-red-500', info: 'fa-circle-info text-blue-500' };
+            const icons = { success: 'fa-circle-check text-nature-500', error: 'fa-circle-xmark text-red-500', info: 'fa-circle-info text-blue-500', warning: 'fa-triangle-exclamation text-yellow-500' };
             toast.className = `toast toast-${type} animate-toast-in`;
             toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} text-xl"></i><span class="text-darktext">${message}</span>`;
             container.appendChild(toast);

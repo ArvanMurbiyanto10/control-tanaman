@@ -23,10 +23,21 @@
                 <p class="text-softtext text-base md:text-lg font-medium max-w-xl">
                     Sistem cerdas memantau tanaman Anda setiap detik. Cuaca hari ini cerah, kelembaban ideal untuk pertumbuhan.
                 </p>
-                <div class="mt-6 flex gap-4">
+                <div class="mt-6 flex flex-wrap gap-3">
                     <div class="bg-white/80 px-4 py-2 rounded-xl flex items-center gap-3 shadow-sm border border-gray-100">
                         <i class="fa-solid fa-leaf text-nature-500 anim-leaf"></i>
                         <span class="font-bold text-sm text-darktext">Fase Vegetatif</span>
+                    </div>
+                    {{-- Badge Curah Hujan: informasi cuaca, bukan fitur interaktif --}}
+                    @php
+                        $isHujan = isset($latestData) && ($latestData->status_hujan == 1 || $latestData->status_hujan === true);
+                    @endphp
+                    <div class="px-4 py-2 rounded-xl flex items-center gap-3 shadow-sm border {{ $isHujan ? 'bg-blue-50/90 border-blue-200' : 'bg-white/80 border-gray-100' }}" title="Deteksi otomatis dari Raindrops Sensor Module">
+                        <i id="icon-hujan" class="fa-solid {{ $isHujan ? 'fa-cloud-rain text-blue-500' : 'fa-sun text-yellow-400 anim-sun' }}"></i>
+                        <div>
+                            <span id="val-hujan" class="font-bold text-sm {{ $isHujan ? 'text-blue-600' : 'text-darktext' }}">{{ $isHujan ? 'Sedang Hujan' : 'Cuaca Cerah' }}</span>
+                            <p id="status-hujan" class="text-[10px] font-semibold {{ $isHujan ? 'text-blue-400' : 'text-softtext' }} leading-none mt-0.5">{{ $isHujan ? 'Pompa nonaktif otomatis' : 'Pompa siap digunakan' }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -50,7 +61,7 @@
 
                 <!-- Power Button Baru -->
 <div class="flex flex-col items-center gap-4 mb-6">
-    <button id="pump-toggle" class="power-button {{ $isPumpOn ? 'active' : '' }}" type="button" {{ $isPumpOn ? 'disabled' : '' }}>
+    <button id="pump-toggle" class="power-button {{ $isPumpOn ? 'active' : '' }}" type="button">
         <svg class="power-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
             <line x1="12" y1="2" x2="12" y2="12"></line>
@@ -72,7 +83,7 @@
         </div>
     </div>
 
-    <!-- Sensor Cards -->
+    <!-- Sensor Cards (3 kolom: Kelembaban, pH, Suhu) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         <!-- Kelembaban -->
@@ -134,7 +145,7 @@
             <div class="absolute -right-4 -top-4 w-24 h-24 bg-sun-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
             <div class="flex justify-between items-start mb-6 relative z-10">
                 <div>
-                    <h3 class="text-softtext text-xs font-extrabold uppercase tracking-widest mb-1">Suhu Udara</h3>
+                    <h3 class="text-softtext text-xs font-extrabold uppercase tracking-widest mb-1">Suhu Tanah</h3>
                     <div class="text-3xl font-black text-darktext flex items-baseline gap-1">
                         <span id="val-suhu" class="anim-count">{{ $latestData->suhu_tanah ?? 0 }}</span><span class="text-lg text-slate-400">°C</span>
                     </div>
@@ -154,7 +165,6 @@
                 elseif($suhuVal > 35) $suhuStatus = 'Panas';
             @endphp
             <p class="text-xs text-softtext font-semibold mt-3 relative z-10">Kondisi: <span id="status-suhu" class="text-sun-600 font-bold">{{ $suhuStatus }}</span></p>
-        </a>
     </div>
 
     <!-- Log Riwayat -->
@@ -175,6 +185,7 @@
                             <th scope="col" class="px-6 py-4 font-extrabold tracking-wider">Suhu</th>
                             <th scope="col" class="px-6 py-4 font-extrabold tracking-wider">Kelembaban</th>
                             <th scope="col" class="px-6 py-4 font-extrabold tracking-wider">pH</th>
+                            <th scope="col" class="px-6 py-4 font-extrabold tracking-wider">Hujan</th>
                             <th scope="col" class="px-6 py-4 font-extrabold tracking-wider">Pompa</th>
                         </tr>
                     </thead>
@@ -195,6 +206,17 @@
                                 <span class="bg-soil-50 text-soil-600 font-bold px-2.5 py-1 rounded-md">{{ $item->ph_tanah }}</span>
                             </td>
                             <td class="px-6 py-4">
+                                @if($item->status_hujan == 1 || $item->status_hujan === true)
+                                    <span class="flex items-center gap-1.5 text-blue-600 font-bold text-xs bg-blue-50 px-3 py-1.5 rounded-full inline-flex border border-blue-100">
+                                        <i class="fa-solid fa-cloud-rain text-blue-500"></i> Hujan
+                                    </span>
+                                @else
+                                    <span class="flex items-center gap-1.5 text-yellow-600 font-bold text-xs bg-yellow-50 px-3 py-1.5 rounded-full inline-flex border border-yellow-100">
+                                        <i class="fa-solid fa-sun text-yellow-500"></i> Cerah
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4">
                                 @if($item->status_pompa == 1 || $item->status_pompa === true)
                                     <span class="flex items-center gap-1.5 text-nature-600 font-bold text-xs bg-nature-50 px-3 py-1.5 rounded-full inline-flex border border-nature-100">
                                         <span class="w-1.5 h-1.5 rounded-full bg-nature-500 anim-sun"></span> Menyala
@@ -208,7 +230,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center font-semibold text-slate-400">
+                            <td colspan="6" class="px-6 py-8 text-center font-semibold text-slate-400">
                                 Belum ada riwayat data aktivitas.
                             </td>
                         </tr>
@@ -228,7 +250,7 @@ const pumpToggle = document.getElementById('pump-toggle');
 const pumpStatusText = document.getElementById('pump-status-text');
 const pumpCountdown = document.getElementById('pump-countdown');
 let wateringInterval = null;
-const WATERING_DURATION = 10; // 10 seconds countdown
+const WATERING_DURATION = {{ $wateringDuration }}; // Ambil durasi detik secara dinamis dari database settings
 
 pumpToggle.addEventListener('click', function() {
     const btn = this;
@@ -237,16 +259,20 @@ pumpToggle.addEventListener('click', function() {
     btn.classList.add('clicked');
     setTimeout(() => btn.classList.remove('clicked'), 300);
     
-    // Start watering sequence
-    startWateringSequence();
+    const isCurrentlyOn = btn.classList.contains('active') || btn.classList.contains('watering');
+    
+    if (isCurrentlyOn) {
+        stopWateringSequence();
+    } else {
+        startWateringSequence();
+    }
 });
 
 function startWateringSequence() {
     // 1. Immediately update UI to watering state (instant response)
     showToast('Menyiram telah dimulai.', 'success');
     
-    pumpToggle.classList.add('watering');
-    pumpToggle.disabled = true;
+    pumpToggle.classList.add('watering', 'counting', 'loading');
     
     // Update indicator ring and icon above
     const ring = document.getElementById('pump-indicator-ring');
@@ -270,14 +296,24 @@ function startWateringSequence() {
     .then(res => res.json())
     .then(data => {
         if (!data.success) {
-            showToast('Gagal menyalakan pompa: ' + (data.message || ''), 'error');
+            if (data.blocked_by_rain) {
+                showToast('🌧️ Pompa diblokir: Hujan sedang terdeteksi di area kebun!', 'error');
+            } else {
+                showToast('Gagal menyalakan pompa: ' + (data.message || ''), 'error');
+            }
             resetPumpUI();
+        } else if (!data.mqtt_ok) {
+            // Status tersimpan di DB, tapi sinyal ke ESP32 tidak terkirim
+            showToast('⚠️ Pompa diperbarui di sistem. Sinyal ke ESP32 tidak terkirim (cek koneksi MQTT).', 'warning');
         }
     })
     .catch(err => {
         console.error(err);
         showToast('Terjadi kesalahan jaringan saat menyalakan pompa.', 'error');
         resetPumpUI();
+    })
+    .finally(() => {
+        pumpToggle.classList.remove('loading');
     });
 
     // 3. Start countdown timer
@@ -294,24 +330,54 @@ function startWateringSequence() {
             // Countdown finished: turn off pump
             showToast('Menyiram telah selesai.', 'success');
             
+            pumpToggle.classList.add('loading');
             cotaFetch('/api/pompa/toggle', {
                 method: 'POST',
                 body: JSON.stringify({ action: 'off' })
             })
             .then(res => res.json())
             .then(data => {
-                if (!data.success) {
-                    showToast('Gagal mematikan pompa: ' + (data.message || ''), 'error');
+                // Selalu success (db-first strategy) — cukup log jika MQTT tidak terkirim
+                if (data.mqtt_ok === false) {
+                    console.info('MQTT off signal tidak terkirim, status sudah diperbarui di DB.');
                 }
             })
-            .catch(err => {
-                console.error(err);
-                showToast('Terjadi kesalahan jaringan saat mematikan pompa.', 'error');
+            .catch(err => console.error('Jaringan error saat mematikan pompa:', err))
+            .finally(() => {
+                pumpToggle.classList.remove('loading');
+                resetPumpUI();
             });
-            
-            resetPumpUI();
         }
     }, 1000);
+}
+
+function stopWateringSequence() {
+    showToast('Penyiraman dihentikan.', 'info');
+    
+    pumpToggle.classList.add('loading');
+    
+    cotaFetch('/api/pompa/toggle', {
+        method: 'POST',
+        body: JSON.stringify({ action: 'off' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            if (data.mqtt_ok === false) {
+                console.info('MQTT off signal tidak terkirim, status sudah diperbarui di DB.');
+            }
+        } else {
+            showToast('Gagal mematikan pompa: ' + (data.message || ''), 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast('Terjadi kesalahan jaringan saat mematikan pompa.', 'error');
+    })
+    .finally(() => {
+        pumpToggle.classList.remove('loading');
+        resetPumpUI();
+    });
 }
 
 function resetPumpUI() {
@@ -320,8 +386,7 @@ function resetPumpUI() {
         wateringInterval = null;
     }
     
-    pumpToggle.classList.remove('watering', 'active');
-    pumpToggle.disabled = false;
+    pumpToggle.classList.remove('watering', 'active', 'counting', 'loading');
     pumpCountdown.textContent = '';
     
     // Update indicator ring and icon above
@@ -362,10 +427,8 @@ function updatePumpUI(isOn) {
     if (btn) {
         if (isOn) {
             btn.classList.add('active');
-            btn.disabled = true;
         } else {
-            btn.classList.remove('active', 'watering');
-            btn.disabled = false;
+            btn.classList.remove('active', 'watering', 'counting', 'loading');
             if (pumpCountdown) pumpCountdown.textContent = '';
         }
     }
@@ -387,14 +450,16 @@ function updatePumpUI(isOn) {
     // === LIVE DATA POLLING (every 5 seconds) ===
     function fetchLatestData() {
         cotaFetch('/api/sensor/latest')
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('HTTP error ' + res.status);
+            return res.json();
+        })
         .then(data => {
             if (data) {
                 // Update Cards (trigger animation by re-assigning value)
                 updateAnimatedValue('val-kelembaban', data.kelembaban);
                 document.getElementById('bar-kelembaban').style.width = data.kelembaban + '%';
                 
-                // Kelembaban status text
                 let kelStatus = 'Kering';
                 if(data.kelembaban >= 60 && data.kelembaban <= 80) kelStatus = 'Optimal';
                 else if(data.kelembaban > 80) kelStatus = 'Basah';
@@ -416,14 +481,57 @@ function updatePumpUI(isOn) {
                 else if(data.suhu_tanah > 35) suhuStatus = 'Panas';
                 document.getElementById('status-suhu').textContent = suhuStatus;
 
-                // Update Power Button silently if it changed externally
-const isPumpOn = (data.status_pompa == 1 || data.status_pompa === true);
-const btnIsOn = pumpToggle.classList.contains('active') || pumpToggle.classList.contains('watering');
-if (!pumpToggle.disabled && btnIsOn !== isPumpOn) {
-    updatePumpUI(isPumpOn);
-}
+                // === UPDATE BADGE CURAH HUJAN (di Hero Section) ===
+                const isHujan = (data.status_hujan == 1 || data.status_hujan === true);
+                const valHujan = document.getElementById('val-hujan');
+                const iconHujan = document.getElementById('icon-hujan');
+                const statusHujan = document.getElementById('status-hujan');
+
+                if (valHujan) {
+                    valHujan.textContent = isHujan ? 'Sedang Hujan' : 'Cuaca Cerah';
+                    valHujan.className = isHujan
+                        ? 'font-bold text-sm text-blue-600'
+                        : 'font-bold text-sm text-darktext';
+                }
+                if (iconHujan) {
+                    // icon-hujan adalah <i> langsung, cukup ganti class
+                    iconHujan.className = isHujan
+                        ? 'fa-solid fa-cloud-rain text-blue-500'
+                        : 'fa-solid fa-sun text-yellow-400 anim-sun';
+                }
+                if (statusHujan) {
+                    statusHujan.textContent = isHujan ? 'Pompa nonaktif otomatis' : 'Pompa siap digunakan';
+                    statusHujan.className = isHujan
+                        ? 'text-[10px] font-semibold text-blue-400 leading-none mt-0.5'
+                        : 'text-[10px] font-semibold text-softtext leading-none mt-0.5';
+                }
+
+                // === RAIN LOCK: Blokir tombol pompa jika hujan terdeteksi ===
+                if (isHujan) {
+                    if (!pumpToggle.classList.contains('watering')) {
+                        pumpToggle.disabled = true;
+                        pumpToggle.title = 'Pompa dinonaktifkan: Hujan terdeteksi';
+                        pumpStatusText.textContent = 'HUJAN ☔';
+                        pumpStatusText.className = 'text-lg font-bold text-blue-500';
+                    }
+                } else {
+                    // Hujan berhenti: pulihkan tombol pompa (hanya jika tidak sedang menyiram)
+                    if (!pumpToggle.classList.contains('watering') && pumpToggle.title === 'Pompa dinonaktifkan: Hujan terdeteksi') {
+                        pumpToggle.disabled = false;
+                        pumpToggle.title = '';
+                        pumpStatusText.textContent = 'MATI';
+                        pumpStatusText.className = 'text-lg font-bold text-red-500';
+                    }
+                    // Update Power Button silently if it changed externally
+                    const isPumpOn = (data.status_pompa == 1 || data.status_pompa === true);
+                    const btnIsOn = pumpToggle.classList.contains('active') || pumpToggle.classList.contains('watering');
+                    if (!pumpToggle.disabled && btnIsOn !== isPumpOn) {
+                        updatePumpUI(isPumpOn);
+                    }
+                }
             }
-        });
+        })
+        .catch(err => console.warn('Gagal mengambil data sensor terbaru:', err));
     }
 
     function updateAnimatedValue(id, newValue) {

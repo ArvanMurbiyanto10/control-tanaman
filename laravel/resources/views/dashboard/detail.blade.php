@@ -167,7 +167,10 @@
     // === LIVE DATA POLLING (every 5 seconds) ===
     function fetchLatestData() {
         cotaFetch('/api/sensor/latest')
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('HTTP error ' + res.status);
+            return res.json();
+        })
         .then(data => {
             if (data) {
                 // Update Main Detail Value dynamically
@@ -210,8 +213,29 @@
                         valEl.innerHTML = valInner;
                     }
                 }
+
+                // === LIVE UPDATE GRAFIK CHART.JS ===
+                const newTime = new Date(data.updated_at);
+                const timeLabel = String(newTime.getHours()).padStart(2, '0') + ':' + String(newTime.getMinutes()).padStart(2, '0');
+                const newValue = data[dbField];
+                const lastLabel = historyChart.data.labels[historyChart.data.labels.length - 1];
+
+                // Tambahkan titik baru hanya jika timestamp berbeda dari data terakhir di grafik
+                if (lastLabel !== timeLabel && newValue !== undefined) {
+                    historyChart.data.labels.push(timeLabel);
+                    historyChart.data.datasets[0].data.push(newValue);
+
+                    // Batasi maksimal 10 titik agar grafik tidak terlalu penuh
+                    if (historyChart.data.labels.length > 10) {
+                        historyChart.data.labels.shift();
+                        historyChart.data.datasets[0].data.shift();
+                    }
+
+                    historyChart.update('active');
+                }
             }
-        });
+        })
+        .catch(err => console.warn('Gagal mengambil data sensor terbaru:', err));
     }
 
     setInterval(fetchLatestData, 5000);

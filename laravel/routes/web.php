@@ -3,10 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
-// Halaman
-Route::get('/', [DashboardController::class, 'index']);
-Route::get('/detail/{jenis}', [DashboardController::class, 'detail']);
-Route::get('/jadwal', [DashboardController::class, 'jadwal']);
 
 // --- RUTE GUEST (HANYA BISA DIAKSES JIKA BELUM LOGIN) ---
 Route::middleware('guest')->group(function () {
@@ -14,14 +10,14 @@ Route::middleware('guest')->group(function () {
     Route::post('/', [AuthController::class, 'login']);
 });
 
-// API Endpoints
+// API Endpoints (tidak perlu auth agar polling live data berjalan)
 Route::get('/api/sensor/latest', [DashboardController::class, 'latestSensor']);
 Route::post('/api/pompa/toggle', [DashboardController::class, 'togglePompa']);
 Route::post('/api/jadwal/simpan', [DashboardController::class, 'simpanJadwal']);
 
 // --- RUTE AUTH (KUNCI DASHBOARD: HARUS LOGIN DULU) ---
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/detail/{jenis}', [DashboardController::class, 'detail']);
     Route::get('/jadwal', [DashboardController::class, 'jadwal']);
 

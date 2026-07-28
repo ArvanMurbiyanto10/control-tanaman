@@ -15,8 +15,8 @@ class ListenMqtt extends Command
     public function handle()
     {
         // Ganti dengan broker MQTT yang nanti Anda pakai di kodingan Arduino
-        $server   = 'broker.hivemq.com';
-        $port     = 1883;
+        $server   = env('MQTT_HOST', 'broker.hivemq.com');
+        $port     = env('MQTT_PORT', 1883);
         $clientId = 'cota_backend_' . uniqid();
 
         $this->info("Menghubungkan ke MQTT Broker: {$server}...");
@@ -25,23 +25,56 @@ class ListenMqtt extends Command
             $mqtt = new MqttClient($server, $port, $clientId);
             $connectionSettings = (new ConnectionSettings)->setKeepAliveInterval(60);
 
+            if ($username = env('MQTT_USERNAME')) {
+                $connectionSettings = $connectionSettings->setUsername($username);
+            }
+            if ($password = env('MQTT_PASSWORD')) {
+                $connectionSettings = $connectionSettings->setPassword($password);
+            }
+            if (env('MQTT_TLS', false)) {
+                $connectionSettings = $connectionSettings->setUseTls(true);
+                $connectionSettings = $connectionSettings->setTlsVerifyPeer(false);
+                $connectionSettings = $connectionSettings->setTlsVerifyPeerName(false);
+            }
+
             $mqtt->connect($connectionSettings, true);
-            $this->info("Berhasil terhubung! Menunggu data dari topik: cota/sensor/data");
+            $sensorTopic = env('MQTT_TOPIC_SENSOR', 'cota/sensor/data');
+            $this->info("Berhasil terhubung! Menunggu data dari topik: {$sensorTopic}");
 
             // Topik ini harus sama persis dengan yang di-publish oleh Arduino nanti
-            $mqtt->subscribe('cota/sensor/data', function ($topic, $message) {
+            $mqtt->subscribe($sensorTopic, function ($topic, $message) {
                 $this->info("Ada data masuk: " . $message);
 
                 $data = json_decode($message, true);
 
-                if (isset($data['suhu_tanah']) && isset($data['ph_tanah'])) {
+                if (!is_array($data)) {
+                    $this->warn("Payload bukan format JSON yang valid, dilewati: " . $message);
+                    return;
+                }
+
+                $suhu        = $data['suhu_tanah'] ?? $data['suhu'] ?? null;
+                $ph          = $data['ph_tanah'] ?? $data['ph'] ?? null;
+                $kelembaban  = $data['kelembaban'] ?? 0;
+                $statusHujan = (bool) ($data['status_hujan'] ?? $data['rain'] ?? false);
+                $statusPompa = (bool) ($data['status_pompa'] ?? false);
+
+                // Jika hujan terdeteksi, pompa otomatis dimatikan (safety lock)
+                if ($statusHujan) {
+                    $statusPompa = false;
+                    $this->warn("Hujan terdeteksi! Pompa dimatikan secara otomatis.");
+                }
+
+                if ($suhu !== null && $ph !== null) {
                     SensorData::create([
-                        'suhu_tanah' => $data['suhu_tanah'],
-                        'ph_tanah' => $data['ph_tanah'],
-                        'kelembaban' => $data['kelembaban'] ?? 0,
-                        'status_pompa' => $data['status_pompa'] ?? false,
+                        'suhu_tanah'   => $suhu,
+                        'ph_tanah'     => $ph,
+                        'kelembaban'   => $kelembaban,
+                        'status_hujan' => $statusHujan,
+                        'status_pompa' => $statusPompa,
                     ]);
-                    $this->info("Data berhasil disimpan ke HeidiSQL!");
+                    $this->info("Data berhasil disimpan ke database!");
+                } else {
+                    $this->warn("Data sensor tidak lengkap (suhu/ph null), dilewati.");
                 }
             }, 0);
 
