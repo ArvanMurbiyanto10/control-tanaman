@@ -3,11 +3,11 @@
     
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 relative z-10">
         <div>
-            <h2 class="text-3xl font-extrabold text-darktext mb-2">Kelembaban Tanah</h2>
+            <h2 class="text-3xl font-extrabold text-darktext mb-2">Kelembapan Tanah</h2>
             <p class="text-sm font-semibold text-softtext">Status air dan kelembaban pada area perakaran.</p>
         </div>
         <div class="w-16 h-16 rounded-2xl bg-water-50 text-water-500 flex items-center justify-center text-3xl shadow-glow-blue mt-4 md:mt-0">
-            <i class="fa-solid fa-droplet anim-water"></i>
+            <i class="fa-solid fa-seedling anim-water"></i>
         </div>
     </div>
 

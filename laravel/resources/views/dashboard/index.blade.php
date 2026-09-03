@@ -91,13 +91,13 @@
             <div class="absolute -right-4 -top-4 w-24 h-24 bg-water-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
             <div class="flex justify-between items-start mb-6 relative z-10">
                 <div>
-                    <h3 class="text-softtext text-xs font-extrabold uppercase tracking-widest mb-1">Kelembaban</h3>
+                    <h3 class="text-softtext text-xs font-extrabold uppercase tracking-widest mb-1">Kelembapan Tanah</h3>
                     <div class="text-3xl font-black text-darktext flex items-baseline gap-1">
                         <span id="val-kelembaban" class="anim-count">{{ $latestData->kelembaban ?? 0 }}</span><span class="text-lg text-slate-400">%</span>
                     </div>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-water-50 text-water-500 flex items-center justify-center text-xl group-hover:bg-water-500 group-hover:text-white transition-colors duration-300">
-                    <i class="fa-solid fa-droplet group-hover:anim-water"></i>
+                    <i class="fa-solid fa-seedling group-hover:anim-water"></i>
                 </div>
             </div>
             <!-- Fluid Bar -->

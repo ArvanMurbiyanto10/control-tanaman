@@ -677,8 +677,8 @@
 
             <a href="/detail/kelembaban"
                 class="sidebar-link {{ request()->is('detail/kelembaban') ? 'active' : '' }} flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold">
-                <i class="fa-solid fa-droplet w-6 text-center text-lg text-water-500 group-hover:anim-water"></i>
-                <span>Kelembaban Air</span>
+                <i class="fa-solid fa-seedling w-6 text-center text-lg text-water-500 group-hover:anim-water"></i>
+                <span>Kelembapan Tanah</span>
             </a>
             <a href="/detail/ph"
                 class="sidebar-link {{ request()->is('detail/ph') ? 'active' : '' }} flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold">

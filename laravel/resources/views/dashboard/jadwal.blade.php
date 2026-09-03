@@ -103,7 +103,7 @@
             
             <div class="flex items-center gap-4 mb-8 relative z-10">
                 <div class="w-12 h-12 rounded-xl bg-water-50 text-water-600 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-droplet"></i>
+                    <i class="fa-solid fa-seedling"></i>
                 </div>
                 <div>
                     <h2 class="text-xl font-extrabold text-darktext">Ambang Batas (Threshold)</h2>
